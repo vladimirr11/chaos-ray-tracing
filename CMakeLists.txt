@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(CRTRays LANGUAGES CXX)
+project(CRTTriangle_pt1 LANGUAGES CXX)
 
-set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
 set(CMAKE_CXX_STANDARD 20)
+set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
 
 add_executable(
     ${PROJECT_NAME} 
@@ -11,6 +11,8 @@ add_executable(
         ${_SRC_DIR}/utils/Ray.h
         ${_SRC_DIR}/utils/Timer.h
         ${_SRC_DIR}/utils/Vector3.h
+        ${_SRC_DIR}/utils/Triangle.h
+        ${_SRC_DIR}/utils/Constants.h
 
         ${_SRC_DIR}/main.cpp
 )
