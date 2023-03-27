@@ -1,89 +1,58 @@
-#include <fstream>
 #include <iostream>
-#include <thread>
-#include "utils/PPMImage.h"
-#include "utils/Ray.h"
-#include "utils/Timer.h"
+#include "utils/Triangle.h"
 
-static constexpr float ASPECT_RATIO = 16.f / 9.f;
-static constexpr int IMG_WIDTH = 2048;
-static constexpr int IMG_HEIGHT = IMG_WIDTH / ASPECT_RATIO;
-static constexpr int NUM_PIXELS = IMG_WIDTH * IMG_HEIGHT;
-static constexpr int MAX_COLOR_COMP = 255;
-
-static void calcColorGradient(const int workerStartIdx, const int workerEndIdx,
-                              PPMImageI& ppmImageOut) {
-    for (int i = workerStartIdx; i < workerEndIdx; i++) {
-        const int row = i / IMG_WIDTH;
-        const int col = i % IMG_WIDTH;
-        const float ndcX = (col + 0.5f) / IMG_WIDTH;
-        const float ndcY = (row + 0.5f) / IMG_HEIGHT;
-        const float screenX = (2.f * ndcX - 1.f) * ASPECT_RATIO;
-        const float screenY = (1.f - 2.f * ndcY);
-        const Ray ray{{0, 0, 0}, (Vector3f(screenX, screenY, -1)).normalize()};
-        ppmImageOut.data[i].color = Color3i(std::abs(ray.dir.x) * 255, std::abs(ray.dir.y) * 255,
-                                            std::abs(ray.dir.z) * 255);
-    }
+inline static float calcParallelogramArea(const Vector3f& v1, const Vector3f& v2) {
+    const Vector3f cProd = cross(v1, v2);
+    return sqrtf(cProd.x * cProd.x + cProd.y * cProd.y + cProd.z * cProd.z);
 }
 
-static void generateColorGradient(const int numThreads, PPMImageI& ppmImageOut) {
-    std::vector<std::thread> workers;
-
-    const int workerRunDist = ppmImageOut.data.size() / numThreads;
-    for (int i = 0; i < numThreads; i++) {
-        const int workerStartIdx = i * workerRunDist;
-        const int workerEndIdx = workerStartIdx + workerRunDist;
-        workers.emplace_back(&calcColorGradient, workerStartIdx, workerEndIdx,
-                             std::ref(ppmImageOut));
-    }
-
-    for (int i = 0; i < numThreads; i++) {
-        workers[i].join();
-    }
+inline static float calcTraingleArea(const Triangle& triangle) {
+    const Vector3f u = triangle.verts[1] - triangle.verts[0];
+    const Vector3f v = triangle.verts[2] - triangle.verts[0];
+    return calcParallelogramArea(u, v) / 2;
 }
 
-static void serializePPMImage(std::ostream& outputStream, const PPMImageI& ppmImage) {
-    outputStream << "P3\n";
-    outputStream << IMG_WIDTH << " " << IMG_HEIGHT << "\n";
-    outputStream << MAX_COLOR_COMP << "\n";
-    for (int c = 1, row = 1; const PPMPixelI& pixel : ppmImage.data) {
-        outputStream << pixel.r << " " << pixel.g << " " << pixel.b << " ";
-        if (c == IMG_WIDTH * row) {
-            outputStream << "\n";
-            row++;
-        }
-        c++;
-    }
+inline static Normal3f calcSurfaceNormal(const Triangle& triangle) {
+    const Vector3f u = triangle.verts[1] - triangle.verts[0];
+    const Vector3f v = triangle.verts[2] - triangle.verts[0];
+    return Normal3f(cross(u, v).normalize());
+}
+
+struct VectorPair {
+    Vector3f A;
+    Vector3f B;
+};
+
+std::ostream& operator<<(std::ostream& out, const Vector3f& v) {
+    out << "{" << v.x << ", " << v.y << ", " << v.z << "}";
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Triangle& triangle) {
+    out << "A" << triangle.verts[0] << ", B" << triangle.verts[1] << ", C" << triangle.verts[2];
+    return out;
 }
 
 int main() {
-    void (*imageCreators[])(const int, PPMImageI&) = {generateColorGradient};
-    const int numImages = std::size(imageCreators);
+    const VectorPair vPairs[] = {VectorPair({3.5, 0, 0}, {1.75, 3.5, 0}),
+                                 VectorPair({3, -3, 1}, {4, 9, 3}),
+                                 VectorPair({3, -3, 1}, {-12, 12, -4})};
 
-    const char* imagesNames[] = {"ColorGradient.ppm"};
+    const Triangle triangles[] = {
+        Triangle({-1.75, -1.75, -3}, {1.75, -1.75, -3}, {0, 1.75, -3}),
+        Triangle({0, 0, -1}, {1, 0, 1}, {-1, 0, 1}),
+        Triangle({0.56, 1.11, 1.23}, {0.44, -2.368, -0.54}, {-1.56, 0.15, -1.92})};
 
-    const int numThreads = 4;
-    printf("Image count [%d]\n", numImages);
+    std::cout << "[Cross products and parallelograms area]\n";
+    for (const auto& [vecA, vecB] : vPairs) {
+        std::cout << "Cross A" << vecA << " x B" << vecB << " = C" << cross(vecA, vecB)
+                  << " [parallelogram area: " << calcParallelogramArea(vecA, vecB) << "]\n";
+    }
 
-    for (int i = 0; i < numImages; i++) {
-        std::ofstream ppmImageFile(imagesNames[i], std::ios::out | std::ios::binary);
-        if (!ppmImageFile.good()) {
-            printf("Failed to open %s\n", imagesNames[i]);
-            exit(EXIT_FAILURE);
-        }
-
-        printf("Loading %s...\n", imagesNames[i]);
-        puts("Start generating data...");
-        {
-            Timer timer;
-            PPMImageI currPPMImage(IMG_WIDTH, IMG_HEIGHT);
-            imageCreators[i](numThreads, currPPMImage);
-            serializePPMImage(ppmImageFile, currPPMImage);
-            printf("%s data generated in [%gms] on %d thread\n", imagesNames[i],
-                   Timer::toMilliSec<float>(timer.getElapsedNanoSec()), numThreads);
-        }
-
-        ppmImageFile.close();
+    std::cout << "\n[Normals and triangles area]\n";
+    for (const Triangle& triang : triangles) {
+        std::cout << "Normal of traingle " << triang << " = N" << calcSurfaceNormal(triang)
+                  << " [triangle area: " << calcTraingleArea(triang) << "]\n";
     }
 
     return 0;

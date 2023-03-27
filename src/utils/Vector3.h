@@ -105,11 +105,24 @@ inline Vector3<T> normalize(Vector3<T>& vec3) {
     return vec3 / vec3.length();
 }
 
+template <typename T>
+inline T dot(const Vector3<T>& v1, const Vector3<T>& v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+template <typename T>
+inline Vector3<T> cross(const Vector3<T>& v1, const Vector3<T>& v2) {
+    return Vector3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+                      v1.x * v2.y - v1.y * v2.x);
+}
+
 typedef Vector3<float> Vector3f;
 typedef Vector3<float> Point3f;
 typedef Vector3<float> Color3f;
+typedef Vector3<float> Normal3f;
 typedef Vector3<int> Vector3i;
 typedef Vector3<int> Point3i;
 typedef Vector3<int> Color3i;
+typedef Vector3<int> Normal3i;
 
 #endif  // !VECTOR3_H
