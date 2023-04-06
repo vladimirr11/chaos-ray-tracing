@@ -20,14 +20,13 @@ struct ParallelTask {
 class TaskManager {
 public:
     /// @brief Set threads count and number of thread handles.
-    /// @param tCount The number of threads to use
     explicit TaskManager(const unsigned tCount) : workers(tCount), threadsCount(tCount) {}
 
     TaskManager() = delete;
     TaskManager(const TaskManager&) = delete;
     TaskManager& operator=(const TaskManager&) = delete;
 
-    /// @brief Creates the threads and assign a worker to each thread.
+    /// @brief Creates the threads.
     void start() {
         assert(!running && "Can't start TaskManager if it's already running");
         running = true;

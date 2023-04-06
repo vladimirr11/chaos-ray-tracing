@@ -101,60 +101,10 @@ bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
 
     // record intersection data
     isect.position = P;
-    isect.t = t;
     isect.normal = N;
+    isect.t = t;
 
     return true;
 }
-
-// bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
-//     const Vector3f& A = mesh->vertsPositions[indices[0]];
-//     const Vector3f& B = mesh->vertsPositions[indices[1]];
-//     const Vector3f& C = mesh->vertsPositions[indices[2]];
-
-//     const Vector3f E0 = B - A;
-//     const Vector3f E1 = C - A;
-
-//     const Vector3f normal = cross(E0, E1).normalize();
-
-//     if (dot(ray.dir, normal) > EPSILON)
-//         return false;
-
-//     // normal not normalized
-//     const Vector3f E0crossE1 = cross(E0, E1);
-
-//     const Vector3f H = ray.origin - A;
-//     const Vector3f D = ray.dir;
-
-//     const float Dcr = -dot(E0crossE1, D);
-//     if (fabs(Dcr) < EPSILON) {
-//         return false;
-//     }
-
-//     const float rDcr = 1.f / Dcr;
-
-//     const Vector3f HcrossD = cross(H, D);
-
-//     const float lambda2 = dot(HcrossD, E1) * rDcr;
-//     if (lambda2 < 0 || lambda2 > 1) {
-//         return false;
-//     }
-
-//     const float lambda3 = -dot(E0, HcrossD) * rDcr;
-//     if (lambda3 < 0 || lambda3 > 1) {
-//         return false;
-//     }
-
-//     if (lambda2 + lambda3 > 1) {
-//         return false;
-//     }
-
-//     const float gamma = dot(E0crossE1, H) * rDcr;
-//     isect.position = ray.at(gamma);
-//     isect.t = gamma;
-//     isect.normal = E0crossE1;
-
-//     return true;
-// }
 
 #endif  // !TRIANGLE_H

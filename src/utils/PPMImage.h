@@ -7,7 +7,7 @@
 #include "Constants.h"
 #include "Vector3.h"
 
-/// @brief PPM Image struct to store the color data for each pixel in the final image
+/// @brief Stores the color data for each pixel in the final image
 template <typename T>
 struct PPMImage {
     union Pixel {

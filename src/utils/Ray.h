@@ -14,7 +14,7 @@ struct Ray {
     
     /// @brief Calculate the position of point along the ray direction 
     /// @param t The distance from the ray origin along the ray direction
-    /// @return The point where t resides
+    /// @return The point at t
     Point3f at(const float t) const { return origin + t * dir; }
 };
 
