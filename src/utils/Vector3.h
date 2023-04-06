@@ -5,8 +5,11 @@
 #include <cfloat>
 #include <cmath>
 
+/// @brief Templated class that represents vector in 3D. It's also used to represents normals and
+/// points in 3D
 template <typename T>
 struct Vector3 {
+    /// @brief The vector components
     union {
         struct {
             T x, y, z;
@@ -88,10 +91,13 @@ struct Vector3 {
 
     Vector3<T> operator-() const { return Vector3<T>(-x, -y, -z); }
 
+    /// @brief Squares each component of the vector
     float lengthSquared() const { return x * x + y * y + z * z; }
 
+    /// @brief Calculates the length of the vector
     float length() const { return sqrtf(lengthSquared()); }
 
+    /// @brief Calculates the normalized (unit) length of the vector
     Vector3<T> normalize() { return *this /= length(); }
 };
 
@@ -105,11 +111,13 @@ inline Vector3<T> normalize(Vector3<T>& vec3) {
     return vec3 / vec3.length();
 }
 
+/// @brief Calculates and return the dot product of the vectors @v1 and @v2
 template <typename T>
 inline T dot(const Vector3<T>& v1, const Vector3<T>& v2) {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
+/// @brief Calculates and return the cross product of the vectors _v1_ and _v2_
 template <typename T>
 inline Vector3<T> cross(const Vector3<T>& v1, const Vector3<T>& v2) {
     return Vector3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,

@@ -2,11 +2,12 @@
 #define PPMIMAGE_H
 
 #include <cstdint>
-#include <vector>
 #include <iostream>
-#include "Vector3.h"
+#include <vector>
 #include "Constants.h"
+#include "Vector3.h"
 
+/// @brief PPM Image struct to store the color data for each pixel in the final image
 template <typename T>
 struct PPMImage {
     union Pixel {
@@ -30,6 +31,7 @@ typedef PPMImage<int> PPMImageI;
 typedef PPMImageF::Pixel PPMPixelF;
 typedef PPMImageI::Pixel PPMPixelI;
 
+/// @brief Writes pixels color data to the provided output stream in ppm format
 inline void serializePPMImage(std::ostream& outputStream, const PPMImageI& ppmImage) {
     outputStream << "P3\n";
     outputStream << IMG_WIDTH << " " << IMG_HEIGHT << "\n";
