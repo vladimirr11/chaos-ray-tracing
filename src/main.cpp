@@ -147,10 +147,10 @@ int main() {
     {
         Camera camera({0, 0, 0}, {0, 0, -1});
 
-        const size_t numFrames = 96;
+        const size_t numFrames = 24;
         std::cout << "\nTask [5] data\nNumber of scenes " << numFrames;
 
-        const float theta = 0.1f;
+        const float theta = 7.5f;
         const float dollyForw = -0.1f, dollyBack = 0.1f;
         for (size_t i = 0; i < numFrames; i++) {
             const std::string fileName = sceneNames[1] + std::to_string(i) + ".ppm";
@@ -167,7 +167,7 @@ int main() {
                 Timer timer;
 
                 camera.roll(theta);
-                
+
                 const float dollyMove = i < (numFrames / 2) ? dollyBack : dollyForw;
                 camera.dolly(dollyMove);
 
