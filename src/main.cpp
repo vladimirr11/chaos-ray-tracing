@@ -147,7 +147,7 @@ int main() {
     {
         Camera camera({0, 0, 0}, {0, 0, -1});
 
-        const size_t numFrames = 24;
+        const size_t numFrames = 96;
         std::cout << "\nTask [5] data\nNumber of scenes " << numFrames;
 
         const float theta = 7.5f;
