@@ -90,10 +90,6 @@ int main() {
                   << "\nTransformation of camera vector {0, 0, -1} to "
                   << camera.getRotationMatrix()[2] << "\n";
 
-        camera.undoLastRotation();
-        std::cout << "Rotation matrix after undo of last move\n"
-                  << camera.getRotationMatrix() << "\n";
-
         camera.truck(-1.f);
         std::cout << "Camera position after move with -1 unit to the left " << camera.getLookFrom()
                   << "\n";
@@ -115,7 +111,7 @@ int main() {
         ppmImageFile.close();
     }
 
-    // // Task 4
+    // Task 4
     {
         const Vector3f cameraPos{0.f, 0.f, 0.f};
         const Vector3f cameraLookAt{0.f, 0.f, -1.f};
@@ -171,7 +167,7 @@ int main() {
                 Timer timer;
 
                 camera.roll(theta);
-
+                
                 const float dollyMove = i < (numFrames / 2) ? dollyBack : dollyForw;
                 camera.dolly(dollyMove);
 

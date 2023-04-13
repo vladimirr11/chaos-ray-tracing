@@ -44,7 +44,7 @@ public:
         lookFrom += rotationM * Vector3f(0.f, 0.f, frontBackStep);
     }
 
-    /// @brief Rotate the camera around X-axis with _thetaDeg_ degrees 
+    /// @brief Rotate the camera around X-axis with _thetaDeg_ degrees
     void tilt(const float thetaDeg) {
         const Matrix3x3 xAxisRotationMatrix = rotateX(thetaDeg);
         rotationM = rotationM * xAxisRotationMatrix;
@@ -61,9 +61,6 @@ public:
         const Matrix3x3 zAxisRotationMatrix = rotateZ(thetaDeg);
         rotationM = rotationM * zAxisRotationMatrix;
     }
-
-    /// @brief Cancel last rotation
-    void undoLastRotation() { rotationM = rotationM * inverse(rotationM); }
 
     Vector3f getLookFrom() const { return lookFrom; }
 
