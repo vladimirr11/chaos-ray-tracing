@@ -16,7 +16,7 @@ struct ParallelTask {
     virtual ~ParallelTask() {}
 };
 
-/// @brief Simple task manager class
+/// @brief Simple task manager (thread pool) class
 class TaskManager {
 public:
     /// @brief Set threads count and number of thread handles.

@@ -97,8 +97,11 @@ struct Vector3 {
     /// @brief Calculates the length of the vector
     float length() const { return sqrtf(lengthSquared()); }
 
-    /// @brief Calculates the normalized (unit) length of the vector
-    Vector3<T> normalize() { return *this /= length(); }
+    /// @brief Calculates normalized (unit) length of the vector
+    Vector3<T> normalize() {
+        assert(length() != 0 && "zero divisor");
+        return *this /= length();
+    }
 };
 
 template <typename T, typename U>
@@ -108,6 +111,7 @@ inline Vector3<T> operator*(U s, const Vector3<T>& v) {
 
 template <typename T>
 inline Vector3<T> normalize(Vector3<T>& vec3) {
+    assert(vec3.length() != 0 && "zero divisor");
     return vec3 / vec3.length();
 }
 

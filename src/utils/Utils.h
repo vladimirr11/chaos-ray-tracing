@@ -48,3 +48,8 @@ inline static Ray getScreenRay(const int row, const int col) {
     const float screenY = (1.f - 2.f * ndcY);
     return Ray{{0, 0, 0}, (Vector3f(screenX, screenY, -1)).normalize()};
 }
+
+/// @brief Converts degrees to radians
+inline static float deg2Radians(const float degrees) {
+    return degrees * (PI / 180.f);
+}

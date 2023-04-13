@@ -18,7 +18,7 @@ public:
     }
 
     /// @brief Retrieves elapsed nanoseconds from the time of construction to the
-    /// call of this function
+    /// time of call to this function.
     int64_t getElapsedNanoSec() const {
         const clock::time_point now = clock::now();
         return std::chrono::duration_cast<nanosec>(now - start).count();
