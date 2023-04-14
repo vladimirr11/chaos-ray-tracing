@@ -64,7 +64,7 @@ public:
 
     Vector3f getLookFrom() const { return lookFrom; }
 
-    Vector3f getLookAt() const { return lookAt; }
+    Vector3f getLookAt() const { return lookAt * rotationM; }
 
     Matrix3x3 getRotationMatrix() const { return rotationM; }
 
