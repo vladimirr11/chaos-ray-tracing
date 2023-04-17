@@ -21,7 +21,7 @@ struct Matrix3x3 {
 
     /// @brief Subscripts row from the matrix by given index
     Vector3f operator[](const int idx) const {
-        assert(0 <= idx && idx < 3);
+        Assert(0 <= idx && idx < 3);
         return Vector3f(m[idx][0], m[idx][1], m[idx][2]);
     }
 

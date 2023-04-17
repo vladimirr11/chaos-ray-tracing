@@ -3,16 +3,17 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cassert>
 #include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <queue>
 #include <thread>
+#include "Defines.h"
 
-/// @brief Abstract base functor class that all scenes should inherit
+/// @brief Abstract base class that should be inherited by renderer
 struct ParallelTask {
-    virtual void operator()(const size_t loopStart, const size_t loopEnd) = 0;
+    // virtual void run(const size_t loopStart, const size_t loopEnd) = 0;
+    virtual void run(const size_t threadIdx, const size_t threadCount) = 0;
     virtual ~ParallelTask() {}
 };
 
@@ -28,7 +29,7 @@ public:
 
     /// @brief Creates the threads.
     void start() {
-        assert(!running && "Can't start TaskManager if it's already running");
+        Assert(!running && "Can't start TaskManager if it's already running");
         running = true;
         for (auto& worker : workers) {
             worker = std::thread(&workerBase, this);
@@ -37,15 +38,15 @@ public:
 
     /// @brief Waits for all tasks to complete, then destroys all threads by joining them.
     void stop() {
-        assert(running && "Can't stop TaskManager if it's not running");
+        Assert(running && "Can't stop TaskManager if it's not running");
         running = false;
         workersCv.notify_all();
         std::for_each(workers.begin(), workers.end(), std::mem_fn(&std::thread::join));
         workers.clear();
     }
 
-    /// @brief Parallelize a task by splitting it into blocks. Each block is then submitted to the
-    /// available threads.
+    /// @brief Parallelize a task by splitting it into blocks. Each block is then submitted to
+    /// the available threads.
     /// @tparam T The type of the indices in the loop
     /// @tparam F The type of function to loop through
     /// @param startIdx The first index in the loop
@@ -76,7 +77,6 @@ public:
         }
     }
 
-private:
     /// @brief Submit a function with zero or more arguments, and no return value, into the tasks
     /// queue. Notifies thread when the function is submitted.
     /// @tparam F The type of the function
@@ -93,6 +93,7 @@ private:
         workersCv.notify_one();
     }
 
+private:
     /// @brief A base function to be assigned to each thread. Waits until it is notified by
     /// scheduleTask() that a task is available, and then retrieves the task from the queue and
     /// executes it.

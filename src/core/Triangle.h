@@ -3,7 +3,7 @@
 
 #include <array>
 #include <vector>
-#include "Constants.h"
+#include "Defines.h"
 #include "Ray.h"
 
 using TriangleIndices = std::array<int, 3>;
@@ -42,15 +42,35 @@ struct TriangleMesh {
                  const std::vector<TriangleIndices>& _vertsIndices)
         : vertsPositions(_vertsPositions), vertsIndices(_vertsIndices) {}
 
-    /// @brief Retrieves list of all triangles in the mesh.
+    /// @brief Retrieves list of all triangles in the mesh upon request
     std::vector<Triangle> getTriangles() const {
         std::vector<Triangle> triangles;
         std::for_each(vertsIndices.begin(), vertsIndices.end(),
                       [&](const TriangleIndices& currTriangleIndices) -> void {
                           triangles.emplace_back(currTriangleIndices, this);
                       });
-
         return triangles;
+    }
+
+    /// @brief Intersect ray with the mesh and records closest intersection point if any
+    bool intersect(const Ray& ray, Intersection& isect) const {
+        Intersection closestPrim;
+        closestPrim.t = FLT_MAX;
+        bool hasIntesect = false;
+        for (size_t i = 0; i < vertsIndices.size(); i++) {
+            const Triangle triangle(vertsIndices[i], this);
+            if (triangle.intersect(ray, isect)) {
+                if (isect.t < closestPrim.t) {
+                    closestPrim = isect;
+                }
+                hasIntesect = true;
+            }
+        }
+
+        if (hasIntesect)
+            isect = closestPrim;
+
+        return hasIntesect;
     }
 };
 

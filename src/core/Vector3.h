@@ -1,9 +1,9 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
-#include <cassert>
 #include <cfloat>
 #include <cmath>
+#include "Defines.h"
 
 /// @brief Templated class that represents vector in 3D. It's also used to represents normals and
 /// points in 3D
@@ -24,12 +24,12 @@ struct Vector3 {
     Vector3(const T _x, const T _y, const T _z) : x(_x), y(_y), z(_z) {}
 
     T& operator[](const int idx) {
-        assert(idx >= 0 && idx < 3);
+        Assert(idx >= 0 && idx < 3);
         return v3[idx];
     }
 
     const T& operator[](const int idx) const {
-        assert(idx >= 0 && idx < 3);
+        Assert(idx >= 0 && idx < 3);
         return v3[idx];
     }
 
@@ -99,7 +99,7 @@ struct Vector3 {
 
     /// @brief Calculates normalized (unit) length of the vector
     Vector3<T> normalize() {
-        assert(length() != 0 && "zero divisor");
+        Assert(length() != 0 && "zero divisor");
         return *this /= length();
     }
 };
@@ -111,7 +111,7 @@ inline Vector3<T> operator*(U s, const Vector3<T>& v) {
 
 template <typename T>
 inline Vector3<T> normalize(Vector3<T>& vec3) {
-    assert(vec3.length() != 0 && "zero divisor");
+    Assert(vec3.length() != 0 && "zero divisor");
     return vec3 / vec3.length();
 }
 
