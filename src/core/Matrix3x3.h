@@ -8,7 +8,7 @@
 struct Matrix3x3 {
     Matrix3x3() = default;
 
-    /// @brief Initialize identity matrix
+    /// @brief Initialize diagonal matrix
     Matrix3x3(const float diagonal) { m[0][0] = m[1][1] = m[2][2] = diagonal; }
 
     /// @brief Initialize 3x3 matrix given 3 vectors each representing a corresponding row in the
@@ -79,7 +79,7 @@ float determinant(const Matrix3x3& m) {
            m.m[0][1] * m.m[1][0] * m.m[2][2] - m.m[0][2] * m.m[1][1] * m.m[2][0];
 }
 
-/// @brief Calculate inverse matrix of _m_ using minor matrices
+/// @brief Calculate inverse matrix of _m_ by using minor matrices
 Matrix3x3 inverse(const Matrix3x3& m) {
     const float det = determinant(m);
 

@@ -41,7 +41,7 @@ public:
         aspectRatio = imageWidth / (float)imageHeight;
     }
 
-    /// @brief Generate ray for each pixel in the scene given _x_ and _y_ raster coordinates
+    /// @brief Generate ray for each pixel in the scene by given _x_ and _y_ raster coordinates
     Ray getRay(const uint32_t x, const uint32_t y) const {
         const float ndcX = (y + 0.5f) / imageWidth;
         const float ndcY = (x + 0.5f) / imageHeight;

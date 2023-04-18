@@ -56,18 +56,18 @@ struct TriangleMesh {
     bool intersect(const Ray& ray, Intersection& isect) const {
         Intersection closestPrim;
         closestPrim.t = FLT_MAX;
-        bool hasIntesect = false;
+        bool hasIntersect = false;
         for (size_t i = 0; i < vertsIndices.size(); i++) {
             const Triangle triangle(vertsIndices[i], this);
             if (triangle.intersect(ray, isect)) {
                 if (isect.t < closestPrim.t) {
                     closestPrim = isect;
                 }
-                hasIntesect = true;
+                hasIntersect = true;
             }
         }
 
-        if (hasIntesect)
+        if (hasIntersect)
             isect = closestPrim;
 
         return hasIntesect;

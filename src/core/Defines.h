@@ -14,7 +14,7 @@ static constexpr float PI = 3.14159265358979323846;
 
 #define Assert(x) assert(x)
 
-struct SceneDimesions {
+struct SceneDimensions {
     int width;
     int height;
 };

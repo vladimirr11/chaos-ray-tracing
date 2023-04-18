@@ -15,7 +15,7 @@ public:
 
     const Camera getCamera() const { return settings.camera; }
 
-    const SceneDimesions getSceneDimensions() const { return settings.sceneDimensions; }
+    const SceneDimensions getSceneDimensions() const { return settings.sceneDimensions; }
 
     const Color3f getBackgroundColor() const { return settings.backgrColor; }
 

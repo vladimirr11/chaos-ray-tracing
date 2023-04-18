@@ -10,9 +10,8 @@
 #include <thread>
 #include "Defines.h"
 
-/// @brief Abstract base class that should be inherited by renderer
+/// @brief Abstract base class that renderer should inherit
 struct ParallelTask {
-    // virtual void run(const size_t loopStart, const size_t loopEnd) = 0;
     virtual void run(const size_t threadIdx, const size_t threadCount) = 0;
     virtual ~ParallelTask() {}
 };

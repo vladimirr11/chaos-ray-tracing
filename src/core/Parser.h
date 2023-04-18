@@ -12,12 +12,12 @@ using namespace rapidjson;
 /// @brief Records global scene settings during parsing of the input json
 struct Settings {
     Color3f backgrColor;
-    SceneDimesions sceneDimensions;
+    SceneDimensions sceneDimensions;
     Camera camera;
     std::vector<TriangleMesh> sceneObjects;
 };
 
-inline static Vector3f loadVector(const Value::ConstArray valArr) {
+inline static Vector3f loadVector(const Value::ConstArray& valArr) {
     Assert(valArr.Size() == 3);
     return Vector3f{valArr[0].GetFloat(), valArr[1].GetFloat(), valArr[2].GetFloat()};
 }

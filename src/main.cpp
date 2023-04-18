@@ -50,7 +50,7 @@ private:
     PPMImageI& ppmImage;
     const std::vector<TriangleMesh> objects;
     const Camera camera;
-    const SceneDimesions sceneDimens;
+    const SceneDimensions sceneDimens;
     const Color3f background;
 };
 
@@ -65,8 +65,8 @@ int main() {
     const size_t numScenes = std::size(inputScenes);
     const unsigned numThreads = std::max<unsigned>(std::thread::hardware_concurrency() - 1, 1);
 
-    TaskManager taskManeger(numThreads);
-    taskManeger.start();
+    TaskManager taskManager(numThreads);
+    taskManager.start();
 
     std::cout << "Number of scene to render [" << numScenes << "]\n";
     for (size_t i = 0; i < numScenes; ++i) {
@@ -77,7 +77,7 @@ int main() {
         }
 
         Scene currScene(inputScenes[i]);
-        const SceneDimesions dimens = currScene.getSceneDimensions();
+        const SceneDimensions dimens = currScene.getSceneDimensions();
         PPMImageI currPPMImage(dimens.width, dimens.height);
 
         Renderer renderer(currPPMImage, currScene);
@@ -88,10 +88,10 @@ int main() {
 
             for (size_t threadIdx = 0; threadIdx < numThreads; threadIdx++) {
                 auto parallelRunTask = std::bind(&Renderer::run, renderer, threadIdx, numThreads);
-                taskManeger.scheduleTask(parallelRunTask);
+                taskManager.scheduleTask(parallelRunTask);
             }
 
-            taskManeger.completeTasks();
+            taskManager.completeTasks();
 
             std::cout << sceneNames[i] << " data generated in ["
                       << Timer::toMilliSec<float>(timer.getElapsedNanoSec()) << "ms] on "
@@ -102,7 +102,7 @@ int main() {
         ppmImageFile.close();
     }
 
-    taskManeger.stop();
+    taskManager.stop();
 
     return 0;
 }
