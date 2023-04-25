@@ -1,13 +1,13 @@
 #include <iostream>
 #include "Triangle.h"
 
-/// @brief Works out parallelogram area formed between vectors _v1_ and _v2_
+/// @brief Computes parallelogram area formed between vectors _v1_ and _v2_
 inline static float calcParallelogramArea(const Vector3f& v1, const Vector3f& v2) {
     const Vector3f cProd = cross(v1, v2);
     return sqrtf(cProd.x * cProd.x + cProd.y * cProd.y + cProd.z * cProd.z);
 }
 
-/// @brief Works out area of _triangle_
+/// @brief Computes area of _triangle_
 inline static float calcTraingleArea(const Triangle& triangle) {
     const Vector3f& A = triangle.mesh->vertsPositions[triangle.indices[0]];
     const Vector3f& B = triangle.mesh->vertsPositions[triangle.indices[1]];
@@ -17,7 +17,7 @@ inline static float calcTraingleArea(const Triangle& triangle) {
     return calcParallelogramArea(E0, E1) / 2;
 }
 
-/// @brief Works out the normalized surface normal of _triangle_ plane
+/// @brief Computes the normalized surface normal of _triangle_ plane
 inline static Normal3f calcSurfaceNormal(const Triangle& triangle) {
     const Vector3f& A = triangle.mesh->vertsPositions[triangle.indices[0]];
     const Vector3f& B = triangle.mesh->vertsPositions[triangle.indices[1]];
@@ -52,4 +52,9 @@ inline static Ray getScreenRay(const int row, const int col) {
 /// @brief Converts degrees to radians
 inline static float deg2Radians(const float degrees) {
     return degrees * (PI / 180.f);
+}
+
+/// @brief Computes sphere area by given sphere radius
+inline static float calcSphereArea(const float sphereR) {
+    return 4 * PI * sphereR * sphereR;
 }

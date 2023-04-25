@@ -12,7 +12,8 @@
 
 /// @brief Abstract base class that renderer should inherit
 struct ParallelTask {
-    virtual void run(const size_t threadIdx, const size_t threadCount) = 0;
+    virtual void run(const size_t threadId, const size_t threadCount, const size_t chunkSize) = 0;
+
     virtual ~ParallelTask() {}
 };
 

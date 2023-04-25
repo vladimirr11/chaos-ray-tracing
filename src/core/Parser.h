@@ -6,15 +6,14 @@
 #include "../external_libs/rapidjson/document.h"
 #include "../external_libs/rapidjson/istreamwrapper.h"
 #include "Camera.h"
+#include "Light.h"
 
 using namespace rapidjson;
 
-/// @brief Records global scene settings during parsing of the input json
+/// @brief Records global scene settings
 struct Settings {
     Color3f backgrColor;
     SceneDimensions sceneDimensions;
-    Camera camera;
-    std::vector<TriangleMesh> sceneObjects;
 };
 
 inline static Vector3f loadVector(const Value::ConstArray& valArr) {
@@ -58,59 +57,90 @@ inline static std::vector<TriangleIndices> loadTriangleIndices(const Value::Cons
 
 class Parser {
 public:
-    /// @brief Parse input json file and returns recorded scene settings
-    static Settings parseJsonSceneFile(const std::string_view& fileName) {
+    /// @brief Retrieves scene objects
+    static std::vector<TriangleMesh> parseSceneObjects(const std::string_view& fileName) {
+        std::vector<TriangleMesh> sceneObjects;
+        Document doc = getJsonDocument(fileName);
+
+        const Value& objects = doc.FindMember(SceneDefines::sceneObjects)->value;
+        Assert(!objects.IsNull() && objects.IsArray());
+
+        sceneObjects.reserve(objects.Size());
+        for (size_t i = 0; i < objects.Size(); ++i) {
+            const Value& vertices = objects[i].FindMember(SceneDefines::vertices)->value;
+            const Value& triangleIndices =
+                objects[i].FindMember(SceneDefines::triangleIndices)->value;
+            Assert(!vertices.IsNull() && vertices.IsArray());
+            Assert(!triangleIndices.IsNull() && triangleIndices.IsArray());
+            sceneObjects.emplace_back(loadVertices(vertices.GetArray()),
+                                      loadTriangleIndices(triangleIndices.GetArray()));
+        }
+
+        return sceneObjects;
+    }
+
+    /// @brief Retrieves camera settings
+    static Camera parseCameraParameters(const std::string_view& fileName) {
+        Camera camera;
+        SceneDimensions sceneDimens;
+        Document doc = getJsonDocument(fileName);
+
+        const Value& cameraSettings = doc.FindMember(SceneDefines::cameraSettings)->value;
+        Assert(!cameraSettings.IsNull() && cameraSettings.IsObject());
+
+        const Value& cameraPos = cameraSettings.FindMember(SceneDefines::cameraPos)->value;
+        const Value& cameraRotationM =
+            cameraSettings.FindMember(SceneDefines::cameraRotationM)->value;
+        Assert(!cameraPos.IsNull() && cameraPos.IsArray());
+        Assert(!cameraRotationM.IsNull() && cameraRotationM.IsArray());
+
+        /// get scene width & height
+        sceneDimens = parseSceneDimensions(fileName);
+
+        camera.init(loadVector(cameraPos.GetArray()), loadMatrix(cameraRotationM.GetArray()),
+                    sceneDimens.width, sceneDimens.height);
+
+        return camera;
+    }
+
+    /// @brief Retrieves scene background color and scene dimensions
+    static Settings parseSceneSettings(const std::string_view& fileName) {
         Settings settings;
         Document doc = getJsonDocument(fileName);
 
         /// set background color
-        const Value& sceneSettings = doc.FindMember(SceneDifines::sceneSettings)->value;
+        const Value& sceneSettings = doc.FindMember(SceneDefines::sceneSettings)->value;
         Assert(!sceneSettings.IsNull() && sceneSettings.IsObject());
-        const Value& backgrColor = sceneSettings.FindMember(SceneDifines::backgroundColor)->value;
+        
+        const Value& backgrColor = sceneSettings.FindMember(SceneDefines::backgroundColor)->value;
         Assert(!backgrColor.IsNull() && backgrColor.IsArray());
-
         settings.backgrColor = loadVector(backgrColor.GetArray());
 
-        /// set image width & height
-        const Value& imageSettings = sceneSettings.FindMember(SceneDifines::imageSettings)->value;
-        Assert(!imageSettings.IsNull() && imageSettings.IsObject());
-        const Value& imgWidth = imageSettings.FindMember(SceneDifines::imageWidth)->value;
-        const Value& imgHeight = imageSettings.FindMember(SceneDifines::imageHeight)->value;
-        Assert(!imgWidth.IsNull() && imgWidth.IsInt());
-        Assert(!imgHeight.IsNull() && imgHeight.IsInt());
-
-        settings.sceneDimensions.width = imgWidth.GetInt();
-        settings.sceneDimensions.height = imgHeight.GetInt();
-
-        /// initialize camera
-        const Value& cameraSettings = doc.FindMember(SceneDifines::cameraSettings)->value;
-        Assert(!cameraSettings.IsNull() && cameraSettings.IsObject());
-        const Value& cameraPos = cameraSettings.FindMember(SceneDifines::cameraPos)->value;
-        const Value& cameraRotationM =
-            cameraSettings.FindMember(SceneDifines::cameraRotationM)->value;
-        Assert(!cameraPos.IsNull() && cameraPos.IsArray());
-        Assert(!cameraRotationM.IsNull() && cameraRotationM.IsArray());
-
-        settings.camera.init(loadVector(cameraPos.GetArray()),
-                             loadMatrix(cameraRotationM.GetArray()), settings.sceneDimensions.width,
-                             settings.sceneDimensions.height);
-
-        /// retrieve scene objects
-        const Value& sceneObjects = doc.FindMember(SceneDifines::sceneObjects)->value;
-        Assert(!sceneObjects.IsNull() && sceneObjects.IsArray());
-
-        settings.sceneObjects.reserve(sceneObjects.Size());
-        for (size_t i = 0; i < sceneObjects.Size(); ++i) {
-            const Value& vertices = sceneObjects[i].FindMember(SceneDifines::vertices)->value;
-            const Value& triangleIndices =
-                sceneObjects[i].FindMember(SceneDifines::triangleIndices)->value;
-            Assert(!vertices.IsNull() && vertices.IsArray());
-            Assert(!triangleIndices.IsNull() && triangleIndices.IsArray());
-            settings.sceneObjects.emplace_back(loadVertices(vertices.GetArray()),
-                                               loadTriangleIndices(triangleIndices.GetArray()));
-        }
+        /// set scene width & height
+        settings.sceneDimensions = parseSceneDimensions(fileName);
 
         return settings;
+    }
+
+    /// @brief Retrieves scene lights parameters
+    static std::vector<Light> parseSceneLights(const std::string_view& fileName) {
+        std::vector<Light> sceneLights;
+        Document doc = getJsonDocument(fileName);
+
+        const Value& lightSettings = doc.FindMember(SceneDefines::sceneLights)->value;
+        Assert(!lightSettings.IsNull() && lightSettings.IsArray());
+
+        sceneLights.reserve(lightSettings.Size());
+        for (size_t i = 0; i < lightSettings.Size(); ++i) {
+            const Value& lightPos = lightSettings[i].FindMember(SceneDefines::lightPosition)->value;
+            const Value& lightIntensity =
+                lightSettings[i].FindMember(SceneDefines::lightIntensity)->value;
+            Assert(!lightPos.IsNull() && lightPos.IsArray());
+            Assert(!lightIntensity.IsNull() && lightIntensity.IsInt());
+            sceneLights.emplace_back(loadVector(lightPos.GetArray()), lightIntensity.GetInt());
+        }
+
+        return sceneLights;
     }
 
 private:
@@ -134,6 +164,27 @@ private:
 
         Assert(doc.IsObject());
         return doc;
+    }
+
+    /// @brief Retrieves scene width & height
+    static SceneDimensions parseSceneDimensions(const std::string_view& fileName) {
+        SceneDimensions sceneDimens;
+        Document doc = getJsonDocument(fileName);
+
+        const Value& sceneSettings = doc.FindMember(SceneDefines::sceneSettings)->value;
+        Assert(!sceneSettings.IsNull() && sceneSettings.IsObject());
+
+        const Value& imageSettings = sceneSettings.FindMember(SceneDefines::imageSettings)->value;
+        Assert(!imageSettings.IsNull() && imageSettings.IsObject());
+        const Value& imgWidth = imageSettings.FindMember(SceneDefines::imageWidth)->value;
+        const Value& imgHeight = imageSettings.FindMember(SceneDefines::imageHeight)->value;
+        Assert(!imgWidth.IsNull() && imgWidth.IsInt());
+        Assert(!imgHeight.IsNull() && imgHeight.IsInt());
+
+        sceneDimens.width = imgWidth.GetInt();
+        sceneDimens.height = imgHeight.GetInt();
+
+        return sceneDimens;
     }
 };
 

@@ -9,7 +9,7 @@
 /// @brief Stores the color data for each pixel in the final image
 template <typename T>
 struct PPMImage {
-    union Pixel {
+    union alignas(4 * alignof(T)) Pixel {
         Vector3<T> color;
         struct {
             T r, g, b;
@@ -20,7 +20,7 @@ struct PPMImage {
 
     PPMImage() = delete;
 
-    PPMImage(const int imgWidth, const int imgHeight) : data(imgWidth * imgHeight) {}
+    PPMImage(const int imageWidth, const int imageHeight) : data(imageWidth * imageHeight) {}
 
     std::vector<Pixel> data;
 };

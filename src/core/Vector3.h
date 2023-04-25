@@ -10,7 +10,7 @@
 template <typename T>
 struct Vector3 {
     /// @brief The vector components
-    union {
+    union alignas(4 * alignof(T)) {
         struct {
             T x, y, z;
         };

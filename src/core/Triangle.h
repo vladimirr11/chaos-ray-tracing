@@ -45,6 +45,7 @@ struct TriangleMesh {
     /// @brief Retrieves list of all triangles in the mesh upon request
     std::vector<Triangle> getTriangles() const {
         std::vector<Triangle> triangles;
+        triangles.reserve(vertsIndices.size());
         std::for_each(vertsIndices.begin(), vertsIndices.end(),
                       [&](const TriangleIndices& currTriangleIndices) -> void {
                           triangles.emplace_back(currTriangleIndices, this);
@@ -70,7 +71,20 @@ struct TriangleMesh {
         if (hasIntersect)
             isect = closestPrim;
 
-        return hasIntesect;
+        return hasIntersect;
+    }
+
+    /// @brief Verifies if ray intersects with the mesh. Returns true on first intersection, false
+    /// if no ray-triangle intersection found
+    bool intersectPrim(const Ray& ray) const {
+        Intersection closestPrim;
+        for (size_t i = 0; i < vertsIndices.size(); i++) {
+            const Triangle triangle(vertsIndices[i], this);
+            if (triangle.intersect(ray, closestPrim)) {
+                return true;
+            }
+        }
+        return false;
     }
 };
 
@@ -83,8 +97,10 @@ bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
     const Vector3f AB = B - A;
     const Vector3f AC = C - A;
 
-    // get normal not normalized
-    const Vector3f N = cross(AB, AC);
+    // compute normal
+    Vector3f N = cross(AB, AC);
+
+    N.normalize();
 
     // check if the ray and plane are parallel
     if (fabs(dot(N, ray.dir)) < EPSILON)
@@ -95,7 +111,7 @@ bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
     // find distance from the ray's origin to the intersection point
     float t = -(dot(N, ray.origin) + D) / dot(N, ray.dir);
 
-    // verify if the triangle is behind the ray
+    // verify if the triangle is behind the ray's origin
     if (t < 0)
         return false;
 
