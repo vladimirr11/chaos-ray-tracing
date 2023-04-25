@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(Scene LANGUAGES CXX)
+project(Lights LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
@@ -20,6 +20,7 @@ add_executable(
         ${_SRC_DIR}/core/Camera.h
         ${_SRC_DIR}/core/Parser.h
         ${_SRC_DIR}/core/Scene.h
+        ${_SRC_DIR}/core/Light.h
 
         ${_SRC_DIR}/main.cpp
 )
