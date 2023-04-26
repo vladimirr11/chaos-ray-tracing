@@ -55,9 +55,9 @@ inline Matrix3x3 operator*(const Matrix3x3& m1, const Matrix3x3& m2) {
 /// @brief Vector-matrix multiplication
 Vector3f operator*(const Vector3f& v, const Matrix3x3& m) {
     Vector3f res;
-    res.x = v.v3[0] * m.m[0][0] + v.v3[1] * m.m[0][1] + v.v3[2] * m.m[0][2];
-    res.y = v.v3[0] * m.m[1][0] + v.v3[1] * m.m[1][1] + v.v3[2] * m.m[1][2];
-    res.z = v.v3[0] * m.m[2][0] + v.v3[1] * m.m[2][1] + v.v3[2] * m.m[2][2];
+    res.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0];
+    res.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1];
+    res.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2];
     return res;
 }
 

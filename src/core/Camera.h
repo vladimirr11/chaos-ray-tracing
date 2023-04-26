@@ -33,7 +33,7 @@ public:
     /// dimensions
     void init(const Point3f& _lookFrom, const Matrix3x3& _rotationM, const int _imageWidth,
               const int _imageHeight, const Point3f& _lookAt = {0.f, 0.f, -1.f}) {
-        lookFrom = _lookFrom * _rotationM;
+        lookFrom = _lookFrom;
         lookAt = _lookAt;
         rotationM = _rotationM;
         imageWidth = _imageWidth;
