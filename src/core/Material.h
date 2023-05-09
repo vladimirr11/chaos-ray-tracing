@@ -57,7 +57,7 @@ struct ReflectiveM : public Material {
 };
 
 /// @brief Constructs the actual material on the heap
-inline static std::unique_ptr<Material> makeMaterial(const std::string_view& materialType,
+inline static std::unique_ptr<Material> makeMaterial(std::string_view materialType,
                                                      const Color3f& albedo, bool smoothShading) {
     std::unique_ptr<Material> materialPtr;
     if (materialType == "diffuse") {

@@ -59,7 +59,7 @@ inline static std::vector<TriangleIndices> loadTriangleIndices(const Value::Cons
 class Parser {
 public:
     /// @brief Retrieves scene objects
-    static std::vector<TriangleMesh> parseSceneObjects(const std::string_view& fileName) {
+    static std::vector<TriangleMesh> parseSceneObjects(std::string_view fileName) {
         std::vector<TriangleMesh> sceneObjects;
         Document doc = getJsonDocument(fileName);
 
@@ -87,7 +87,7 @@ public:
     }
 
     /// @brief Retrieves camera settings
-    static Camera parseCameraParameters(const std::string_view& fileName) {
+    static Camera parseCameraParameters(std::string_view fileName) {
         Camera camera;
         SceneDimensions sceneDimens;
         Document doc = getJsonDocument(fileName);
@@ -111,7 +111,7 @@ public:
     }
 
     /// @brief Retrieves scene background color and scene dimensions
-    static Settings parseSceneSettings(const std::string_view& fileName) {
+    static Settings parseSceneSettings(std::string_view fileName) {
         Settings settings;
         Document doc = getJsonDocument(fileName);
 
@@ -130,7 +130,7 @@ public:
     }
 
     /// @brief Retrieves scene lights parameters
-    static std::vector<Light> parseSceneLights(const std::string_view& fileName) {
+    static std::vector<Light> parseSceneLights(std::string_view fileName) {
         std::vector<Light> sceneLights;
         Document doc = getJsonDocument(fileName);
 
@@ -156,7 +156,7 @@ public:
     }
 
     /// @brief Retrieves scene materials
-    static std::vector<std::unique_ptr<Material>> parseMaterials(const std::string_view& fileName) {
+    static std::vector<std::unique_ptr<Material>> parseMaterials(std::string_view fileName) {
         std::vector<std::unique_ptr<Material>> materials;
         Document doc = getJsonDocument(fileName);
 
@@ -184,7 +184,7 @@ public:
 
 private:
     /// @brief Retrieves json document from input stream
-    static Document getJsonDocument(const std::string_view& fileName) {
+    static Document getJsonDocument(std::string_view fileName) {
         std::ifstream inputFileStream(fileName.data());
         if (!inputFileStream.good()) {
             std::cout << "Input file stream " << fileName << " not good\n";
@@ -206,7 +206,7 @@ private:
     }
 
     /// @brief Retrieves scene width & height
-    static SceneDimensions parseSceneDimensions(const std::string_view& fileName) {
+    static SceneDimensions parseSceneDimensions(std::string_view fileName) {
         SceneDimensions sceneDimens;
         Document doc = getJsonDocument(fileName);
 
