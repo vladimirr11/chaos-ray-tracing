@@ -13,13 +13,13 @@ public:
         : camera(Parser::parseCameraParameters(fileName)),
           sceneObjects(Parser::parseSceneObjects(fileName)),
           sceneLights(Parser::parseSceneLights(fileName)),
+          materials(Parser::parseMaterials(fileName)),
           settings(Parser::parseSceneSettings(fileName)) {}
 
     /// @brief Intersects ray with the scene and finds the closest intersection point if any
     bool intersect(const Ray& ray, Intersection& isect) const {
         bool hasIntersect = false;
         Intersection closestPrim;
-        closestPrim.t = FLT_MAX;
         for (const auto& mesh : sceneObjects) {
             if (mesh.intersect(ray, isect)) {
                 if (isect.t < closestPrim.t) {
@@ -37,30 +37,34 @@ public:
 
     /// @brief Verifies if ray intersects with any scene object. Returns true on first intersection,
     /// false if no ray-object intersection found
-    bool intersectPrim(const Ray& ray) const {
+    bool intersectPrim(const Ray& ray, Intersection& isect) const {
         for (const auto& mesh : sceneObjects) {
-            if (mesh.intersectPrim(ray)) {
+            if (mesh.intersectPrim(ray, isect)) {
                 return true;
             }
         }
         return false;
     }
 
-    const Color3f getBackground() const { return settings.backgrColor; }
+    const Color3f& getBackground() const { return settings.backgrColor; }
 
-    const SceneDimensions getSceneDimensions() const { return settings.sceneDimensions; }
+    const SceneDimensions& getSceneDimensions() const { return settings.sceneDimensions; }
 
-    const Camera getCamera() const { return camera; }
+    const Camera& getCamera() const { return camera; }
 
-    const std::vector<Light> getLights() const { return sceneLights; }
+    const std::vector<Light>& getLights() const { return sceneLights; }
 
-    const std::vector<TriangleMesh> getObjects() const { return sceneObjects; }
+    const std::vector<TriangleMesh>& getObjects() const { return sceneObjects; }
+
+    const std::vector<std::unique_ptr<Material>>& getMaterials() const { return materials; }
 
 private:
     Camera camera;                                 ///< The scene's camera
     const std::vector<TriangleMesh> sceneObjects;  ///< List of the scene's objects
     const std::vector<Light> sceneLights;          ///< Lights in the scene
-    const Settings settings;                       ///< Global scene settings
+    const std::vector<std::unique_ptr<Material>>
+        materials;            ///< List of the scene's objects materials
+    const Settings settings;  ///< Global scene settings
 };
 
 #endif  // !SCENE_H

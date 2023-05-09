@@ -2,23 +2,26 @@
 #define TRIANGLE_H
 
 #include <array>
+#include <cstdint>
 #include <vector>
-#include "Defines.h"
 #include "Ray.h"
 
 using TriangleIndices = std::array<int, 3>;
 
 /// @brief Keeps data for ray-triangle intersection
 struct Intersection {
-    Vector3f position;
-    Vector3f normal;
-    float t = 0.001f;  ///< Distance from the origin of the ray to the intersection point
+    Vector3f pos;         ///< Intersection position
+    Normal3f faceN;       ///< Face normal
+    Normal3f smoothN;     ///< Computed smooth normal using barycentric coordinates
+    float t = FLT_MAX;    ///< Distance from the origin of the ray to the intersection point
+    float u, v;           ///< Barycentric coordinates
+    int32_t materialIdx;  ///< Material index of the intersection
 };
 
 struct TriangleMesh;
 
 struct Triangle {
-    const int* indices;        ///< Holds the indices of the triangle's vertices in the mesh
+    const int* indices;        ///< Indices of the triangle's vertices in the mesh
     const TriangleMesh* mesh;  ///< The triangle's owner mesh
 
     Triangle() = delete;
@@ -26,122 +29,32 @@ struct Triangle {
     Triangle(const TriangleIndices& _indices, const TriangleMesh* _mesh)
         : indices(_indices.data()), mesh(_mesh){};
 
-    /// @brief Verifies if ray intersect with the triangle.
-    bool intersect(const Ray& ray, Intersection& isect) const;
+    /// @brief Verifies if ray intersect with the triangle
+    bool intersect(const Ray& ray, float tMin, Intersection& isect) const;
 };
 
-/// @brief Triangle mesh class that stores each vertex position in 3D and their corresponding
-/// indices in the mesh.
+/// @brief Triangle mesh class that stores information for each object in the scene
 struct TriangleMesh {
-    std::vector<Point3f> vertsPositions;        ///< Vertices positions in 3D
+    std::vector<Point3f> vertsPositions;      ///< Positions of the vertices in 3D
     std::vector<TriangleIndices> vertsIndices;  ///< Keeps indices for each triangle in the mesh
+    std::vector<Normal3f> vertsNormals;       ///< Pre-computed normals for each vertex in the mesh
+    int32_t materialIdx;  ///< Index from the materials list that characterise current object (mesh)
 
     TriangleMesh() {}
 
+    /// @brief Initialize triangle mesh from vertex positions, vertex indices, and material index
     TriangleMesh(const std::vector<Point3f>& _vertsPositions,
-                 const std::vector<TriangleIndices>& _vertsIndices)
-        : vertsPositions(_vertsPositions), vertsIndices(_vertsIndices) {}
+                 const std::vector<TriangleIndices>& _vertsIndices, const int32_t _materialIdx);
 
     /// @brief Retrieves list of all triangles in the mesh upon request
-    std::vector<Triangle> getTriangles() const {
-        std::vector<Triangle> triangles;
-        triangles.reserve(vertsIndices.size());
-        std::for_each(vertsIndices.begin(), vertsIndices.end(),
-                      [&](const TriangleIndices& currTriangleIndices) -> void {
-                          triangles.emplace_back(currTriangleIndices, this);
-                      });
-        return triangles;
-    }
+    std::vector<Triangle> getTriangles() const;
 
     /// @brief Intersect ray with the mesh and records closest intersection point if any
-    bool intersect(const Ray& ray, Intersection& isect) const {
-        Intersection closestPrim;
-        closestPrim.t = FLT_MAX;
-        bool hasIntersect = false;
-        for (size_t i = 0; i < vertsIndices.size(); i++) {
-            const Triangle triangle(vertsIndices[i], this);
-            if (triangle.intersect(ray, isect)) {
-                if (isect.t < closestPrim.t) {
-                    closestPrim = isect;
-                }
-                hasIntersect = true;
-            }
-        }
-
-        if (hasIntersect)
-            isect = closestPrim;
-
-        return hasIntersect;
-    }
+    bool intersect(const Ray& ray, Intersection& isect) const;
 
     /// @brief Verifies if ray intersects with the mesh. Returns true on first intersection, false
     /// if no ray-triangle intersection found
-    bool intersectPrim(const Ray& ray) const {
-        Intersection closestPrim;
-        for (size_t i = 0; i < vertsIndices.size(); i++) {
-            const Triangle triangle(vertsIndices[i], this);
-            if (triangle.intersect(ray, closestPrim)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    bool intersectPrim(const Ray& ray, Intersection& isect) const;
 };
-
-bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
-    // take out the triangle's vertices
-    const Vector3f& A = mesh->vertsPositions[indices[0]];
-    const Vector3f& B = mesh->vertsPositions[indices[1]];
-    const Vector3f& C = mesh->vertsPositions[indices[2]];
-
-    const Vector3f AB = B - A;
-    const Vector3f AC = C - A;
-
-    // compute normal
-    Vector3f N = cross(AB, AC);
-
-    N.normalize();
-
-    // check if the ray and plane are parallel
-    if (fabs(dot(N, ray.dir)) < EPSILON)
-        return false;
-
-    float D = -dot(N, A);
-
-    // find distance from the ray's origin to the intersection point
-    float t = -(dot(N, ray.origin) + D) / dot(N, ray.dir);
-
-    // verify if the triangle is behind the ray's origin
-    if (t < 0)
-        return false;
-
-    // get intersection point
-    const Vector3f P = ray.at(t);
-
-    // verify if intersection point _P_ is on the left side of edge _E0_
-    const Vector3f E0 = AB;
-    const Vector3f AP = P - A;
-    if (dot(N, cross(E0, AP)) < 0)
-        return false;
-
-    // verify if intersection point _P_ is on the left side of edge _E1_
-    const Vector3f E1 = C - B;
-    const Vector3f BP = P - B;
-    if (dot(N, cross(E1, BP)) < 0)
-        return false;
-
-    // verify if intersection point _P_ is on the left side of edge _E2_
-    const Vector3f E2 = A - C;
-    const Vector3f CP = P - C;
-    if (dot(N, cross(E2, CP)) < 0)
-        return false;
-
-    // record intersection data
-    isect.position = P;
-    isect.normal = N;
-    isect.t = t;
-
-    return true;
-}
 
 #endif  // !TRIANGLE_H

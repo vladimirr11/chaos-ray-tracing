@@ -30,8 +30,8 @@ typedef PPMImage<int> PPMImageI;
 typedef PPMImageF::Pixel PPMPixelF;
 typedef PPMImageI::Pixel PPMPixelI;
 
-/// @brief Writes pixels color data to the provided output stream in ppm format
-inline void serializePPMImage(std::ostream& outputStream, const PPMImageI& ppmImage) {
+/// @brief Writes pixel color data to the provided output stream in ppm format
+inline static void serializePPMImage(std::ostream& outputStream, const PPMImageI& ppmImage) {
     outputStream << "P3\n";
     outputStream << IMG_WIDTH << " " << IMG_HEIGHT << "\n";
     outputStream << MAX_COLOR_COMP << "\n";

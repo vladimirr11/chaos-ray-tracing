@@ -105,25 +105,30 @@ struct Vector3 {
 };
 
 template <typename T, typename U>
-inline Vector3<T> operator*(U s, const Vector3<T>& v) {
+inline static Vector3<T> operator*(U s, const Vector3<T>& v) {
     return v * s;
 }
 
 template <typename T>
-inline Vector3<T> normalize(Vector3<T>& vec3) {
+inline static Vector3<T> operator*(const Vector3<T>& v1, const Vector3<T>& v2) {
+    return Vector3<T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
+}
+
+template <typename T>
+inline static Vector3<T> normalize(Vector3<T>& vec3) {
     Assert(vec3.length() != 0 && "zero divisor");
     return vec3 / vec3.length();
 }
 
 /// @brief Calculates and return the dot product of the vectors @v1 and @v2
 template <typename T>
-inline T dot(const Vector3<T>& v1, const Vector3<T>& v2) {
+inline static T dot(const Vector3<T>& v1, const Vector3<T>& v2) {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
 /// @brief Calculates and return the cross product of the vectors _v1_ and _v2_
 template <typename T>
-inline Vector3<T> cross(const Vector3<T>& v1, const Vector3<T>& v2) {
+inline static Vector3<T> cross(const Vector3<T>& v1, const Vector3<T>& v2) {
     return Vector3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
                       v1.x * v2.y - v1.y * v2.x);
 }

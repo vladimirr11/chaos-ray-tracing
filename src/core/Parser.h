@@ -7,6 +7,7 @@
 #include "../external_libs/rapidjson/istreamwrapper.h"
 #include "Camera.h"
 #include "Light.h"
+#include "Material.h"
 
 using namespace rapidjson;
 
@@ -68,12 +69,18 @@ public:
         sceneObjects.reserve(objects.Size());
         for (size_t i = 0; i < objects.Size(); ++i) {
             const Value& vertices = objects[i].FindMember(SceneDefines::vertices)->value;
+            Assert(!vertices.IsNull() && vertices.IsArray());
+
             const Value& triangleIndices =
                 objects[i].FindMember(SceneDefines::triangleIndices)->value;
-            Assert(!vertices.IsNull() && vertices.IsArray());
             Assert(!triangleIndices.IsNull() && triangleIndices.IsArray());
+
+            const Value& materialIdx = objects[i].FindMember(SceneDefines::materialIdx)->value;
+            Assert(!materialIdx.IsNull() && materialIdx.IsInt());
+
             sceneObjects.emplace_back(loadVertices(vertices.GetArray()),
-                                      loadTriangleIndices(triangleIndices.GetArray()));
+                                      loadTriangleIndices(triangleIndices.GetArray()),
+                                      materialIdx.GetInt());
         }
 
         return sceneObjects;
@@ -111,7 +118,7 @@ public:
         /// set background color
         const Value& sceneSettings = doc.FindMember(SceneDefines::sceneSettings)->value;
         Assert(!sceneSettings.IsNull() && sceneSettings.IsObject());
-        
+
         const Value& backgrColor = sceneSettings.FindMember(SceneDefines::backgroundColor)->value;
         Assert(!backgrColor.IsNull() && backgrColor.IsArray());
         settings.backgrColor = loadVector(backgrColor.GetArray());
@@ -128,19 +135,51 @@ public:
         Document doc = getJsonDocument(fileName);
 
         const Value& lightSettings = doc.FindMember(SceneDefines::sceneLights)->value;
+        if (!lightSettings.IsArray()) {
+            return sceneLights;
+        }
         Assert(!lightSettings.IsNull() && lightSettings.IsArray());
 
         sceneLights.reserve(lightSettings.Size());
         for (size_t i = 0; i < lightSettings.Size(); ++i) {
             const Value& lightPos = lightSettings[i].FindMember(SceneDefines::lightPosition)->value;
+            Assert(!lightPos.IsNull() && lightPos.IsArray());
+
             const Value& lightIntensity =
                 lightSettings[i].FindMember(SceneDefines::lightIntensity)->value;
-            Assert(!lightPos.IsNull() && lightPos.IsArray());
             Assert(!lightIntensity.IsNull() && lightIntensity.IsInt());
+
             sceneLights.emplace_back(loadVector(lightPos.GetArray()), lightIntensity.GetInt());
         }
 
         return sceneLights;
+    }
+
+    /// @brief Retrieves scene materials
+    static std::vector<std::unique_ptr<Material>> parseMaterials(const std::string_view& fileName) {
+        std::vector<std::unique_ptr<Material>> materials;
+        Document doc = getJsonDocument(fileName);
+
+        const Value& materialsInfo = doc.FindMember(SceneDefines::materialsInfo)->value;
+        Assert(!materialsInfo.IsNull() && materialsInfo.IsArray());
+
+        materials.reserve(materialsInfo.Size());
+        for (size_t i = 0; i < materialsInfo.Size(); i++) {
+            const Value& mType = materialsInfo[i].FindMember(SceneDefines::materialType)->value;
+            Assert(!mType.IsNull() && mType.IsString());
+
+            const Value& albedo = materialsInfo[i].FindMember(SceneDefines::materialAlbedo)->value;
+            Assert(!albedo.IsNull() && albedo.IsArray());
+
+            const Value& smooth = materialsInfo[i].FindMember(SceneDefines::materialSmootSh)->value;
+            Assert(!smooth.IsNull() && smooth.IsBool());
+
+            auto materialPtr =
+                makeMaterial(mType.GetString(), loadVector(albedo.GetArray()), smooth.GetBool());
+            materials.push_back(std::move(materialPtr));
+        }
+
+        return materials;
     }
 
 private:

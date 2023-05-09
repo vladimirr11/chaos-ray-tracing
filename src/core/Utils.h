@@ -50,11 +50,18 @@ inline static Ray getScreenRay(const int row, const int col) {
 }
 
 /// @brief Converts degrees to radians
-inline static float deg2Radians(const float degrees) {
-    return degrees * (PI / 180.f);
-}
+inline static float deg2Radians(const float degrees) { return degrees * (PI / 180.f); }
 
 /// @brief Computes sphere area by given sphere radius
-inline static float calcSphereArea(const float sphereR) {
-    return 4 * PI * sphereR * sphereR;
+inline static float calcSphereArea(const float sphereR) { return 4 * PI * sphereR * sphereR; }
+
+/// @brief Clamps a value between a pair of boundary values
+inline static float clamp(const float low, const float high, const float value) {
+    return std::max(low, std::min(high, value));
+}
+
+/// @brief Computes reflected ray given incident ray direction and hitted surface normal
+template <typename T>
+inline static Vector3<T> reflect(const Vector3<T>& incidentDir, const Vector3<T>& normal) {
+    return incidentDir - 2.f * dot(incidentDir, normal) * normal;
 }
