@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(Lights LANGUAGES CXX)
+project(Shading_pt1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
@@ -13,14 +13,18 @@ add_executable(
         ${_SRC_DIR}/core/PPMImage.h
         ${_SRC_DIR}/core/Timer.h
         ${_SRC_DIR}/core/Triangle.h
+        ${_SRC_DIR}/core/Triangle.cpp
         ${_SRC_DIR}/core/Defines.h
         ${_SRC_DIR}/core/TaskManager.h
         ${_SRC_DIR}/core/Utils.h
         ${_SRC_DIR}/core/Matrix3x3.h
+        ${_SRC_DIR}/core/Matrix3x3.cpp
         ${_SRC_DIR}/core/Camera.h
         ${_SRC_DIR}/core/Parser.h
         ${_SRC_DIR}/core/Scene.h
         ${_SRC_DIR}/core/Light.h
+        ${_SRC_DIR}/core/Material.h
+        ${_SRC_DIR}/core/Material.cpp
 
         ${_SRC_DIR}/main.cpp
 )
