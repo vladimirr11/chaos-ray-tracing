@@ -5,8 +5,8 @@
 #include <cmath>
 #include "Defines.h"
 
-/// @brief Templated class that represents vector in 3D. It's also used to represents normals and
-/// points in 3D
+/// @brief Templated class that represents vector in 3D. It's also used to
+/// represents normals and points in 3D
 template <typename T>
 struct Vector3 {
     /// @brief The vector components

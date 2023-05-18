@@ -8,6 +8,8 @@
 
 using TriangleIndices = std::array<int, 3>;
 
+class Material;
+
 /// @brief Keeps data for ray-triangle intersection
 struct Intersection {
     Vector3f pos;         ///< Intersection position
@@ -35,9 +37,9 @@ struct Triangle {
 
 /// @brief Triangle mesh class that stores information for each object in the scene
 struct TriangleMesh {
-    std::vector<Point3f> vertsPositions;      ///< Positions of the vertices in 3D
+    std::vector<Point3f> vertsPositions;        ///< Positions of the vertices in world space
     std::vector<TriangleIndices> vertsIndices;  ///< Keeps indices for each triangle in the mesh
-    std::vector<Normal3f> vertsNormals;       ///< Pre-computed normals for each vertex in the mesh
+    std::vector<Normal3f> vertsNormals;  ///< Pre-computed normals for each vertex in the mesh
     int32_t materialIdx;  ///< Index from the materials list that characterise current object (mesh)
 
     TriangleMesh() {}

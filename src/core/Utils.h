@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include "Triangle.h"
 
 /// @brief Computes parallelogram area formed between vectors _v1_ and _v2_
@@ -64,4 +65,18 @@ inline static float clamp(const float low, const float high, const float value) 
 template <typename T>
 inline static Vector3<T> reflect(const Vector3<T>& incidentDir, const Vector3<T>& normal) {
     return incidentDir - 2.f * dot(incidentDir, normal) * normal;
+}
+
+/// @brief Returns the number of available hardware threads
+inline static unsigned getHardwareThreads() {
+    return std::max<unsigned>(std::thread::hardware_concurrency() - 1, 1);
+}
+
+/// @brief Converts crtscene file name to ppm file name
+inline static std::string getImageFileName(const std::string& inputFile) {
+    const size_t start = inputFile.rfind("/");
+    const size_t end = inputFile.rfind(".");
+    if (start > end)
+        return inputFile.substr(0, end) + ".ppm";
+    return inputFile.substr(start + 1, end - start - 1) + ".ppm";
 }

@@ -3,16 +3,24 @@
 
 #include "Vector3.h"
 
-/// @brief Ray struct specified by its origin and direction
+enum class RayType {
+    CAMERA,      ///< Ray comming from the camera
+    SHADOW,      ///< Ray shading diffuse material
+    REFLECTION,  ///< Ray scattered from reflective material
+    UNDEFINED,
+};
+
+/// @brief Ray struct specified by its origin, direction, type and depth
 struct Ray {
-    Point3f origin; 
+    Point3f origin;
     Vector3f dir;
+    int depth = 0;
 
     Ray() : origin(0), dir(0, 0, -1) {}
 
     Ray(const Point3f& org, const Vector3f& d) : origin(org), dir(d) {}
-    
-    /// @brief Calculate the position of point along the ray direction 
+
+    /// @brief Calculate the position of point along the ray direction
     /// @param t The distance from the ray origin along the ray direction
     /// @return The point at t
     Point3f at(const float t) const { return origin + t * dir; }

@@ -11,8 +11,14 @@
 
 using namespace rapidjson;
 
+/// @brief Stores scene's width and height
+struct SceneDimensions {
+    int width{};
+    int height{};
+};
+
 /// @brief Records global scene settings
-struct Settings {
+struct SceneSettings {
     Color3f backgrColor;
     SceneDimensions sceneDimensions;
 };
@@ -58,136 +64,185 @@ inline static std::vector<TriangleIndices> loadTriangleIndices(const Value::Cons
 
 class Parser {
 public:
-    /// @brief Retrieves scene objects
-    static std::vector<TriangleMesh> parseSceneObjects(std::string_view fileName) {
-        std::vector<TriangleMesh> sceneObjects;
-        Document doc = getJsonDocument(fileName);
+    /// @brief Retrieves scene objects from given input json
+    static int32_t parseSceneObjects(std::string_view inputFile,
+                                     std::vector<TriangleMesh>& sceneObjects) {
+        Document doc = getJsonDocument(inputFile);
 
         const Value& objects = doc.FindMember(SceneDefines::sceneObjects)->value;
-        Assert(!objects.IsNull() && objects.IsArray());
+        if (!objects.IsArray()) {
+            std::cerr << "Parser failed to parse scene objects." << std::endl;
+            return EXIT_FAILURE;
+        }
 
         sceneObjects.reserve(objects.Size());
         for (size_t i = 0; i < objects.Size(); ++i) {
             const Value& vertices = objects[i].FindMember(SceneDefines::vertices)->value;
-            Assert(!vertices.IsNull() && vertices.IsArray());
+            if (!vertices.IsArray()) {
+                std::cerr << "Parser failed to parse triangle vertices." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             const Value& triangleIndices =
                 objects[i].FindMember(SceneDefines::triangleIndices)->value;
-            Assert(!triangleIndices.IsNull() && triangleIndices.IsArray());
+            if (!triangleIndices.IsArray()) {
+                std::cerr << "Parser failed to parse triangle indices." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             const Value& materialIdx = objects[i].FindMember(SceneDefines::materialIdx)->value;
-            Assert(!materialIdx.IsNull() && materialIdx.IsInt());
+            if (!materialIdx.IsInt()) {
+                std::cerr << "Parser failed to parse material index." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             sceneObjects.emplace_back(loadVertices(vertices.GetArray()),
                                       loadTriangleIndices(triangleIndices.GetArray()),
                                       materialIdx.GetInt());
         }
 
-        return sceneObjects;
+        return EXIT_SUCCESS;
     }
 
-    /// @brief Retrieves camera settings
-    static Camera parseCameraParameters(std::string_view fileName) {
-        Camera camera;
+    /// @brief Retrieves camera settings from given input json
+    static int32_t parseCameraParameters(std::string_view inputFile, Camera& camera) {
         SceneDimensions sceneDimens;
-        Document doc = getJsonDocument(fileName);
+        Document doc = getJsonDocument(inputFile);
 
         const Value& cameraSettings = doc.FindMember(SceneDefines::cameraSettings)->value;
-        Assert(!cameraSettings.IsNull() && cameraSettings.IsObject());
+        if (!cameraSettings.IsObject() || cameraSettings.ObjectEmpty()) {
+            std::cerr << "Parser failed to parse camera settings." << std::endl;
+            return EXIT_FAILURE;
+        }
 
         const Value& cameraPos = cameraSettings.FindMember(SceneDefines::cameraPos)->value;
+        if (!cameraPos.IsArray()) {
+            std::cerr << "Parser failed to parse camera position." << std::endl;
+            return EXIT_FAILURE;
+        }
         const Value& cameraRotationM =
             cameraSettings.FindMember(SceneDefines::cameraRotationM)->value;
-        Assert(!cameraPos.IsNull() && cameraPos.IsArray());
-        Assert(!cameraRotationM.IsNull() && cameraRotationM.IsArray());
+        if (!cameraRotationM.IsArray()) {
+            std::cerr << "Parser failed to parse camera rotation matrix." << std::endl;
+            return EXIT_FAILURE;
+        }
 
         /// get scene width & height
-        sceneDimens = parseSceneDimensions(fileName);
+        sceneDimens = parseSceneDimensions(inputFile);
 
         camera.init(loadVector(cameraPos.GetArray()), loadMatrix(cameraRotationM.GetArray()),
                     sceneDimens.width, sceneDimens.height);
 
-        return camera;
+        return EXIT_SUCCESS;
     }
 
-    /// @brief Retrieves scene background color and scene dimensions
-    static Settings parseSceneSettings(std::string_view fileName) {
-        Settings settings;
-        Document doc = getJsonDocument(fileName);
+    /// @brief Retrieves scene settings from given input json
+    static int32_t parseSceneSettings(std::string_view inputFile, SceneSettings& settings) {
+        Document doc = getJsonDocument(inputFile);
 
         /// set background color
         const Value& sceneSettings = doc.FindMember(SceneDefines::sceneSettings)->value;
-        Assert(!sceneSettings.IsNull() && sceneSettings.IsObject());
+        if (!sceneSettings.IsObject()) {
+            std::cerr << "Parser failed to parse scene settings." << std::endl;
+            return EXIT_FAILURE;
+        }
 
         const Value& backgrColor = sceneSettings.FindMember(SceneDefines::backgroundColor)->value;
-        Assert(!backgrColor.IsNull() && backgrColor.IsArray());
+        if (!backgrColor.IsArray()) {
+            std::cerr << "Parser failed to parse scene background color." << std::endl;
+            return EXIT_FAILURE;
+        }
+
         settings.backgrColor = loadVector(backgrColor.GetArray());
 
         /// set scene width & height
-        settings.sceneDimensions = parseSceneDimensions(fileName);
+        settings.sceneDimensions = parseSceneDimensions(inputFile);
 
-        return settings;
+        return EXIT_SUCCESS;
     }
 
-    /// @brief Retrieves scene lights parameters
-    static std::vector<Light> parseSceneLights(std::string_view fileName) {
-        std::vector<Light> sceneLights;
-        Document doc = getJsonDocument(fileName);
+    /// @brief Retrieves scene lights from given input json
+    static int32_t parseSceneLights(std::string_view inputFile, std::vector<Light>& sceneLights) {
+        Document doc = getJsonDocument(inputFile);
 
         const Value& lightSettings = doc.FindMember(SceneDefines::sceneLights)->value;
-        if (!lightSettings.IsArray()) {
-            return sceneLights;
+        if (!lightSettings.IsArray() &&
+            !lightSettings.IsObject()) {  // workaround for scenes without lights
+            std::cerr << "Parser has not found scene lights." << std::endl;
+            return EXIT_SUCCESS;
         }
-        Assert(!lightSettings.IsNull() && lightSettings.IsArray());
+
+        if (!lightSettings.IsArray()) {
+            std::cerr << "Parser failed to parse scene lights." << std::endl;
+            return EXIT_FAILURE;
+        }
 
         sceneLights.reserve(lightSettings.Size());
         for (size_t i = 0; i < lightSettings.Size(); ++i) {
             const Value& lightPos = lightSettings[i].FindMember(SceneDefines::lightPosition)->value;
-            Assert(!lightPos.IsNull() && lightPos.IsArray());
+            if (!lightPos.IsArray()) {
+                std::cerr << "Parser failed to parse light position." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             const Value& lightIntensity =
                 lightSettings[i].FindMember(SceneDefines::lightIntensity)->value;
-            Assert(!lightIntensity.IsNull() && lightIntensity.IsInt());
+            if (!lightIntensity.IsInt()) {
+                std::cerr << "Parser failed to parse light intensity." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             sceneLights.emplace_back(loadVector(lightPos.GetArray()), lightIntensity.GetInt());
         }
 
-        return sceneLights;
+        return EXIT_SUCCESS;
     }
 
-    /// @brief Retrieves scene materials
-    static std::vector<std::unique_ptr<Material>> parseMaterials(std::string_view fileName) {
-        std::vector<std::unique_ptr<Material>> materials;
-        Document doc = getJsonDocument(fileName);
+    /// @brief Retrieves scene materials fron given input json
+    static int32_t parseMaterials(std::string_view inputFile,
+                                  //   std::vector<std::shared_ptr<Material>>& materials) {
+                                  std::vector<Material>& materials) {
+        Document doc = getJsonDocument(inputFile);
 
         const Value& materialsInfo = doc.FindMember(SceneDefines::materialsInfo)->value;
-        Assert(!materialsInfo.IsNull() && materialsInfo.IsArray());
+        if (!materialsInfo.IsArray()) {
+            std::cerr << "Parser failed to parse materials information." << std::endl;
+            return EXIT_FAILURE;
+        }
 
         materials.reserve(materialsInfo.Size());
         for (size_t i = 0; i < materialsInfo.Size(); i++) {
             const Value& mType = materialsInfo[i].FindMember(SceneDefines::materialType)->value;
-            Assert(!mType.IsNull() && mType.IsString());
+            if (!mType.IsString()) {
+                std::cerr << "Parser failed to parse material type." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             const Value& albedo = materialsInfo[i].FindMember(SceneDefines::materialAlbedo)->value;
-            Assert(!albedo.IsNull() && albedo.IsArray());
+            if (!albedo.IsArray()) {
+                std::cerr << "Parser failed to parse material albedo." << std::endl;
+                return EXIT_FAILURE;
+            }
 
             const Value& smooth = materialsInfo[i].FindMember(SceneDefines::materialSmootSh)->value;
-            Assert(!smooth.IsNull() && smooth.IsBool());
+            if (!smooth.IsBool()) {
+                std::cerr << "Parser failed to parse material smooth shading." << std::endl;
+                return EXIT_FAILURE;
+            }
 
-            auto materialPtr =
-                makeMaterial(mType.GetString(), loadVector(albedo.GetArray()), smooth.GetBool());
-            materials.push_back(std::move(materialPtr));
+            materials.emplace_back(
+                makeMaterial(mType.GetString(), loadVector(albedo.GetArray()), smooth.GetBool()));
         }
 
-        return materials;
+        return EXIT_SUCCESS;
     }
 
 private:
     /// @brief Retrieves json document from input stream
-    static Document getJsonDocument(std::string_view fileName) {
-        std::ifstream inputFileStream(fileName.data());
+    static Document getJsonDocument(std::string_view inputFile) {
+        std::ifstream inputFileStream(inputFile.data());
         if (!inputFileStream.good()) {
-            std::cout << "Input file stream " << fileName << " not good\n";
+            std::cout << "Input file stream " << inputFile << " not good\n";
             exit(EXIT_FAILURE);
         }
 
@@ -206,9 +261,9 @@ private:
     }
 
     /// @brief Retrieves scene width & height
-    static SceneDimensions parseSceneDimensions(std::string_view fileName) {
+    static SceneDimensions parseSceneDimensions(std::string_view inputFile) {
         SceneDimensions sceneDimens;
-        Document doc = getJsonDocument(fileName);
+        Document doc = getJsonDocument(inputFile);
 
         const Value& sceneSettings = doc.FindMember(SceneDefines::sceneSettings)->value;
         Assert(!sceneSettings.IsNull() && sceneSettings.IsObject());

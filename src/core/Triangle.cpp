@@ -1,4 +1,5 @@
 #include "Triangle.h"
+#include "Material.h"
 
 TriangleMesh::TriangleMesh(const std::vector<Point3f>& _vertsPositions,
                            const std::vector<TriangleIndices>& _vertsIndices,
@@ -94,8 +95,8 @@ bool Triangle::intersect(const Ray& ray, float tMin, Intersection& isect) const 
     // find distance from the ray's origin to the intersection point
     float t = -(dot(N, ray.origin) + D) / dot(N, ray.dir);
 
-    // verify if the triangle is behind the ray's origin or the triangle
-    // is behind the closest found so far
+    // verify that the triangle is not behind the ray's origin and the triangle
+    // is ahead of the closest found so far
     if (t < 0 || t > tMin)
         return false;
 

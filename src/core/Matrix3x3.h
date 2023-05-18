@@ -11,8 +11,8 @@ struct Matrix3x3 {
     /// @brief Initialize diagonal matrix
     Matrix3x3(const float diagonal) { m[0][0] = m[1][1] = m[2][2] = diagonal; }
 
-    /// @brief Initialize 3x3 matrix given 3 vectors each representing a corresponding row in the
-    /// matrix
+    /// @brief Initialize 3x3 matrix given 3 vectors each representing a corresponding
+    /// row in the matrix
     Matrix3x3(const Vector3f& r0, const Vector3f& r1, const Vector3f& r2) {
         m[0][0] = r0.x, m[0][1] = r0.y, m[0][2] = r0.z;
         m[1][0] = r1.x, m[1][1] = r1.y, m[1][2] = r1.z;

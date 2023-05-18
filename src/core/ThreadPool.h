@@ -1,5 +1,5 @@
-#ifndef TASKMANAGER_H
-#define TASKMANAGER_H
+#ifndef THREADPOOL_H
+#define THREADPOOL_H
 
 #include <algorithm>
 #include <atomic>
@@ -10,35 +10,28 @@
 #include <thread>
 #include "Defines.h"
 
-/// @brief Abstract base class that renderer should inherit
-struct ParallelTask {
-    virtual void run(const size_t threadId, const size_t threadCount, const size_t chunkSize) = 0;
-
-    virtual ~ParallelTask() {}
-};
-
-/// @brief Simple task manager (thread pool) class
-class TaskManager {
+/// @brief Simple thread pool class
+class ThreadPool {
 public:
-    /// @brief Set threads count and number of thread handles.
-    explicit TaskManager(const unsigned tCount) : workers(tCount), threadsCount(tCount) {}
+    /// @brief Set threads count and number of thread handles
+    explicit ThreadPool(const unsigned tCount) : workers(tCount), threadsCount(tCount) {}
 
-    TaskManager() = delete;
-    TaskManager(const TaskManager&) = delete;
-    TaskManager& operator=(const TaskManager&) = delete;
+    ThreadPool() = delete;
+    ThreadPool(const ThreadPool&) = delete;
+    ThreadPool& operator=(const ThreadPool&) = delete;
 
-    /// @brief Creates the threads.
+    /// @brief Creates the threads
     void start() {
-        Assert(!running && "Can't start TaskManager if it's already running");
+        Assert(!running && "Can't start ThreadPool if it's already running");
         running = true;
         for (auto& worker : workers) {
             worker = std::thread(&workerBase, this);
         }
     }
 
-    /// @brief Waits for all tasks to complete, then destroys all threads by joining them.
+    /// @brief Waits for all tasks to complete, then destroys all threads by joining them
     void stop() {
-        Assert(running && "Can't stop TaskManager if it's not running");
+        Assert(running && "Can't stop ThreadPool if it's not running");
         running = false;
         workersCv.notify_all();
         std::for_each(workers.begin(), workers.end(), std::mem_fn(&std::thread::join));
@@ -46,7 +39,7 @@ public:
     }
 
     /// @brief Parallelize a task by splitting it into blocks. Each block is then submitted to
-    /// the available threads.
+    /// the available threads
     /// @tparam T The type of the indices in the loop
     /// @tparam F The type of function to loop through
     /// @param startIdx The first index in the loop
@@ -67,7 +60,7 @@ public:
         }
     }
 
-    /// @brief Wait for all tasks in the queue to complete.
+    /// @brief Wait for all tasks in the queue to complete
     void completeTasks() {
         for (;;) {
             if (numTasks == 0) {
@@ -78,7 +71,7 @@ public:
     }
 
     /// @brief Submit a function with zero or more arguments, and no return value, into the tasks
-    /// queue. Notifies thread when the function is submitted.
+    /// queue. Notifies thread when the function is submitted
     /// @tparam F The type of the function
     /// @tparam ...Args The types of the arguments
     /// @param task The function to submit to the tasks queue
@@ -96,7 +89,7 @@ public:
 private:
     /// @brief A base function to be assigned to each thread. Waits until it is notified by
     /// scheduleTask() that a task is available, and then retrieves the task from the queue and
-    /// executes it.
+    /// executes it
     void workerBase() {
         for (;;) {
             std::function<void()> task;
@@ -136,4 +129,4 @@ private:
     const unsigned threadsCount{};
 };
 
-#endif  // !TASKMANAGER_H
+#endif  // !THREADPOOL_H
