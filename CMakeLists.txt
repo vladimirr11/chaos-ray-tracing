@@ -15,7 +15,7 @@ add_executable(
         ${_SRC_DIR}/core/Triangle.h
         ${_SRC_DIR}/core/Triangle.cpp
         ${_SRC_DIR}/core/Defines.h
-        ${_SRC_DIR}/core/TaskManager.h
+        ${_SRC_DIR}/core/ThreadPool.h
         ${_SRC_DIR}/core/Utils.h
         ${_SRC_DIR}/core/Matrix3x3.h
         ${_SRC_DIR}/core/Matrix3x3.cpp
@@ -25,6 +25,7 @@ add_executable(
         ${_SRC_DIR}/core/Light.h
         ${_SRC_DIR}/core/Material.h
         ${_SRC_DIR}/core/Material.cpp
+        ${_SRC_DIR}/core/Renderer.h
 
         ${_SRC_DIR}/main.cpp
 )
