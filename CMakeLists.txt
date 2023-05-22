@@ -26,6 +26,7 @@ add_executable(
         ${_SRC_DIR}/core/Material.h
         ${_SRC_DIR}/core/Material.cpp
         ${_SRC_DIR}/core/Renderer.h
+        ${_SRC_DIR}/core/AABBox.h
 
         ${_SRC_DIR}/main.cpp
 )
