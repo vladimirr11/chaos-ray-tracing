@@ -5,17 +5,18 @@
 #include <limits>
 
 #define Assert(x) assert(x)
-
-static const float ASPECT_RATIO = 16.f / 9.f;
-static const int IMG_WIDTH = 1920;
-static const int IMG_HEIGHT = IMG_WIDTH / ASPECT_RATIO;
-static const int NUM_PIXELS = IMG_WIDTH * IMG_HEIGHT;
-static const int MAX_COLOR_COMP = 255;
-static const float EPSILON = std::numeric_limits<float>::epsilon();
-static const float PI = 3.14159265358979323846;
-static const float SHADOW_BIAS = 1e-2f;
-static const int MAX_RAY_DEPTH = 5;
-static const size_t PIXELS_PER_THREAD = 16;
+static constexpr float ASPECT_RATIO = 16.f / 9.f;
+static constexpr int IMG_WIDTH = 1920;
+static constexpr int IMG_HEIGHT = IMG_WIDTH / ASPECT_RATIO;
+static constexpr int NUM_PIXELS = IMG_WIDTH * IMG_HEIGHT;
+static constexpr int MAX_COLOR_COMP = 255;
+static constexpr float EPSILON = std::numeric_limits<float>::epsilon() * 0.5f;
+static constexpr float PI = 3.14159265358979323846;
+static constexpr float SHADOW_BIAS = 1e-2f;
+static constexpr int MAX_RAY_DEPTH = 5;
+static constexpr size_t PIXELS_PER_THREAD = 16;
+static constexpr float MAX_FLOAT = std::numeric_limits<float>::max();
+static constexpr float MIN_FLOAT = std::numeric_limits<float>::min();
 
 namespace SceneDefines {
     inline const char* sceneSettings = "settings";

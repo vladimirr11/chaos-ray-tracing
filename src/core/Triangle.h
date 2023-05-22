@@ -4,7 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
-#include "Ray.h"
+#include "AABBox.h"
 
 using TriangleIndices = std::array<int, 3>;
 
@@ -15,7 +15,7 @@ struct Intersection {
     Vector3f pos;         ///< Intersection position
     Normal3f faceN;       ///< Face normal
     Normal3f smoothN;     ///< Computed smooth normal using barycentric coordinates
-    float t = FLT_MAX;    ///< Distance from the origin of the ray to the intersection point
+    float t = MAX_FLOAT;  ///< Distance from the origin of the ray to the intersection point
     float u, v;           ///< Barycentric coordinates
     int32_t materialIdx;  ///< Material index of the intersection
 };
@@ -37,16 +37,17 @@ struct Triangle {
 
 /// @brief Triangle mesh class that stores information for each object in the scene
 struct TriangleMesh {
-    std::vector<Point3f> vertsPositions;        ///< Positions of the vertices in world space
-    std::vector<TriangleIndices> vertsIndices;  ///< Keeps indices for each triangle in the mesh
-    std::vector<Normal3f> vertsNormals;  ///< Pre-computed normals for each vertex in the mesh
+    std::vector<Point3f> vertexPositions;        ///< Positions of the vertices in world space
+    std::vector<TriangleIndices> vertexIndices;  ///< Keeps indices for each triangle in the mesh
+    std::vector<Normal3f> vertexNormals;  ///< Pre-computed normals for each vertex in the mesh
     int32_t materialIdx;  ///< Index from the materials list that characterise current object (mesh)
+    BBox bounds;          ///< The bounding box of the mesh
 
-    TriangleMesh() {}
+    TriangleMesh() = delete;
 
     /// @brief Initialize triangle mesh from vertex positions, vertex indices, and material index
-    TriangleMesh(const std::vector<Point3f>& _vertsPositions,
-                 const std::vector<TriangleIndices>& _vertsIndices, const int32_t _materialIdx);
+    TriangleMesh(const std::vector<Point3f>& _vertexPositions,
+                 const std::vector<TriangleIndices>& _vertexIndices, const int32_t _materialIdx);
 
     /// @brief Retrieves list of all triangles in the mesh upon request
     std::vector<Triangle> getTriangles() const;

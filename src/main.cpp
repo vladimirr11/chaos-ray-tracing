@@ -2,7 +2,7 @@
 
 static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
                            const RenderSettings& settings) {
-    const std::string ppmFileName = getImageFileName(inputFile);
+    const std::string ppmFileName = getPpmFileName(inputFile);
     std::ofstream ppmImageFile(ppmFileName, std::ios::out | std::ios::binary);
     if (!ppmImageFile.good()) {
         std::cout << "Input file " << inputFile << " not good.\n";
@@ -54,7 +54,7 @@ int main() {
         "scenes/scene3.crtscene", "scenes/scene4.crtscene", "scenes/scene5.crtscene"};
 
     RenderSettings renderSettings;
-
+    
     ThreadPool pool(renderSettings.numThreads);
     pool.start();
 

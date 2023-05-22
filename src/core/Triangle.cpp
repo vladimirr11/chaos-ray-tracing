@@ -1,37 +1,39 @@
 #include "Triangle.h"
 #include "Material.h"
 
-TriangleMesh::TriangleMesh(const std::vector<Point3f>& _vertsPositions,
-                           const std::vector<TriangleIndices>& _vertsIndices,
+TriangleMesh::TriangleMesh(const std::vector<Point3f>& _vertexPositions,
+                           const std::vector<TriangleIndices>& _vertexIndices,
                            const int32_t _materialIdx)
-    : vertsPositions(_vertsPositions), vertsIndices(_vertsIndices), materialIdx(_materialIdx) {
-    vertsNormals.resize(vertsPositions.size());
-    for (size_t i = 0; i < vertsIndices.size(); i++) {
-        const Vector3f& v0 = vertsPositions[vertsIndices[i][0]];
-        const Vector3f& v1 = vertsPositions[vertsIndices[i][1]];
-        const Vector3f& v2 = vertsPositions[vertsIndices[i][2]];
+    : vertexPositions(_vertexPositions), vertexIndices(_vertexIndices), materialIdx(_materialIdx) {
+    vertexNormals.resize(vertexPositions.size());
+    for (size_t i = 0; i < vertexIndices.size(); i++) {
+        const Vector3f& A = vertexPositions[vertexIndices[i][0]];
+        const Vector3f& B = vertexPositions[vertexIndices[i][1]];
+        const Vector3f& C = vertexPositions[vertexIndices[i][2]];
 
-        const Vector3f v0v1 = v1 - v0;
-        const Vector3f v0v2 = v2 - v0;
+        const Vector3f AB = B - A;
+        const Vector3f AC = C - A;
 
         // compute face normal
-        const Vector3f faceN = cross(v0v1, v0v2);
+        const Vector3f faceN = cross(AB, AC);
 
         // accumulate vertex normals for each triangle in the mesh
-        vertsNormals[vertsIndices[i][0]] += faceN;
-        vertsNormals[vertsIndices[i][1]] += faceN;
-        vertsNormals[vertsIndices[i][2]] += faceN;
+        vertexNormals[vertexIndices[i][0]] += faceN;
+        vertexNormals[vertexIndices[i][1]] += faceN;
+        vertexNormals[vertexIndices[i][2]] += faceN;
     }
 
-    for (size_t i = 0; i < vertsNormals.size(); i++) {
-        vertsNormals[i].normalize();
+    // normalize vertex normals and compute mesh bounds in the same loop
+    for (size_t i = 0; i < vertexNormals.size(); i++) {
+        vertexNormals[i].normalize();
+        bounds.expandBy(vertexPositions[i]);
     }
 }
 
 std::vector<Triangle> TriangleMesh::getTriangles() const {
     std::vector<Triangle> triangles;
-    triangles.reserve(vertsIndices.size());
-    std::for_each(vertsIndices.begin(), vertsIndices.end(),
+    triangles.reserve(vertexIndices.size());
+    std::for_each(vertexIndices.begin(), vertexIndices.end(),
                   [&](const TriangleIndices& currTriangleIndices) -> void {
                       triangles.emplace_back(currTriangleIndices, this);
                   });
@@ -39,14 +41,18 @@ std::vector<Triangle> TriangleMesh::getTriangles() const {
 }
 
 bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
-    Intersection closestPrim;
+    // early return if ray does not intersect with the mesh bounds
+    if (!bounds.intersect(ray))
+        return false;
+
+    Intersection* closestPrim = nullptr;  // copy only the address not the entire structure
     bool hasIntersect = false;
-    float tMin = FLT_MAX;
-    for (size_t i = 0; i < vertsIndices.size(); i++) {
-        const Triangle triangle(vertsIndices[i], this);
+    float tMin = MAX_FLOAT;
+    for (size_t i = 0; i < vertexIndices.size(); i++) {
+        const Triangle triangle(vertexIndices[i], this);
         if (triangle.intersect(ray, tMin, isect)) {
-            if (isect.t < closestPrim.t) {
-                closestPrim = isect;
+            if (isect.t < tMin) {
+                closestPrim = &isect;
                 tMin = isect.t;
             }
             hasIntersect = true;
@@ -54,7 +60,7 @@ bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
     }
 
     if (hasIntersect)
-        isect = closestPrim;
+        isect = *closestPrim;
 
     return hasIntersect;
 }
@@ -62,8 +68,8 @@ bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
 bool TriangleMesh::intersectPrim(const Ray& ray, Intersection& isect) const {
     Intersection closestPrim;
     float tMin = FLT_MAX;
-    for (size_t i = 0; i < vertsIndices.size(); i++) {
-        const Triangle triangle(vertsIndices[i], this);
+    for (size_t i = 0; i < vertexIndices.size(); i++) {
+        const Triangle triangle(vertexIndices[i], this);
         if (triangle.intersect(ray, tMin, closestPrim) && closestPrim.t < isect.t) {
             return true;
         }
@@ -73,9 +79,9 @@ bool TriangleMesh::intersectPrim(const Ray& ray, Intersection& isect) const {
 
 bool Triangle::intersect(const Ray& ray, float tMin, Intersection& isect) const {
     // take out the triangle's vertices
-    const Vector3f& A = mesh->vertsPositions[indices[0]];
-    const Vector3f& B = mesh->vertsPositions[indices[1]];
-    const Vector3f& C = mesh->vertsPositions[indices[2]];
+    const Vector3f& A = mesh->vertexPositions[indices[0]];
+    const Vector3f& B = mesh->vertexPositions[indices[1]];
+    const Vector3f& C = mesh->vertexPositions[indices[2]];
 
     const Vector3f AB = B - A;
     const Vector3f AC = C - A;
@@ -125,9 +131,9 @@ bool Triangle::intersect(const Ray& ray, float tMin, Intersection& isect) const 
         return false;
 
     // take out the triangle's vertex normals
-    const Normal3f& v0N = mesh->vertsNormals[indices[0]];
-    const Normal3f& v1N = mesh->vertsNormals[indices[1]];
-    const Normal3f& v2N = mesh->vertsNormals[indices[2]];
+    const Normal3f& v0N = mesh->vertexNormals[indices[0]];
+    const Normal3f& v1N = mesh->vertexNormals[indices[1]];
+    const Normal3f& v2N = mesh->vertexNormals[indices[2]];
 
     // record intersection data
     isect.pos = P;

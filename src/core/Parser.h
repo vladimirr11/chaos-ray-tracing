@@ -3,11 +3,11 @@
 
 #include <fstream>
 #include <string>
-#include "../external_libs/rapidjson/document.h"
-#include "../external_libs/rapidjson/istreamwrapper.h"
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
+#include "../external_libs/rapidjson/document.h"
+#include "../external_libs/rapidjson/istreamwrapper.h"
 
 using namespace rapidjson;
 
