@@ -46,12 +46,11 @@ bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
         return false;
 
     bool hasIntersect = false;
-    float tMin = MAX_FLOAT;
     for (size_t i = 0; i < vertIndices.size(); i++) {
         const Triangle triangle(vertIndices[i], this);
-        if (triangle.intersectMT(ray, tMin, isect)) {
-            if (isect.t < tMin) {
-                tMin = isect.t;
+        if (triangle.intersectMT(ray, isect)) {
+            if (isect.t < ray.tMax) {
+                ray.tMax = isect.t;
             }
             hasIntersect = true;
         }
@@ -62,17 +61,16 @@ bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
 
 bool TriangleMesh::intersectPrim(const Ray& ray) const {
     Intersection closestPrim;
-    float tMin = MAX_FLOAT;
     for (size_t i = 0; i < vertIndices.size(); i++) {
         const Triangle triangle(vertIndices[i], this);
-        if (triangle.intersectMT(ray, tMin, closestPrim) && closestPrim.t < ray.tMax) {
+        if (triangle.intersectMT(ray, closestPrim) && closestPrim.t < ray.tMax) {
             return true;
         }
     }
     return false;
 }
 
-bool Triangle::intersect(const Ray& ray, float tMin, Intersection& isect) const {
+bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
     // takes out the triangle's vertices
     const Vector3f& A = mesh->vertPositions[indices[0]];
     const Vector3f& B = mesh->vertPositions[indices[1]];
@@ -98,7 +96,7 @@ bool Triangle::intersect(const Ray& ray, float tMin, Intersection& isect) const 
 
     // verifies that the triangle is not behind the ray's origin and the triangle
     // is ahead of the closest found so far
-    if (t < 0 || t > tMin)
+    if (t < 0 || t > ray.tMax)
         return false;
 
     // gets intersection point
@@ -142,7 +140,7 @@ bool Triangle::intersect(const Ray& ray, float tMin, Intersection& isect) const 
     return true;
 }
 
-bool Triangle::intersectMT(const Ray& ray, float tMin, Intersection& isect) const {
+bool Triangle::intersectMT(const Ray& ray, Intersection& isect) const {
     // takes out the triangle's vertices
     const Vector3f& A = mesh->vertPositions[indices[0]];
     const Vector3f& B = mesh->vertPositions[indices[1]];
@@ -175,7 +173,7 @@ bool Triangle::intersectMT(const Ray& ray, float tMin, Intersection& isect) cons
     // computes _t_ parameter and test that the triangle is not behind the
     // ray's origin and the triangle is ahead of the closest found so far
     const float t = dot(AC, qVec) * invDet;
-    if (t < 0 || t > tMin)
+    if (t < 0 || t > ray.tMax)
         return false;
 
     // gets intersection point
