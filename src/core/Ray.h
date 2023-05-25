@@ -15,6 +15,7 @@ struct Ray {
     Point3f origin;
     Vector3f dir;
     int depth = 0;
+    mutable float tMax = MAX_FLOAT;
 
     Ray() : origin(0), dir(0, 0, -1) {}
 

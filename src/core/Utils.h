@@ -10,9 +10,9 @@ inline static float calcParallelogramArea(const Vector3f& v1, const Vector3f& v2
 
 /// @brief Computes area of _triangle_
 inline static float calcTraingleArea(const Triangle& triangle) {
-    const Vector3f& A = triangle.mesh->vertexPositions[triangle.indices[0]];
-    const Vector3f& B = triangle.mesh->vertexPositions[triangle.indices[1]];
-    const Vector3f& C = triangle.mesh->vertexPositions[triangle.indices[2]];
+    const Vector3f& A = triangle.mesh->vertPositions[triangle.indices[0]];
+    const Vector3f& B = triangle.mesh->vertPositions[triangle.indices[1]];
+    const Vector3f& C = triangle.mesh->vertPositions[triangle.indices[2]];
     const Vector3f E0 = B - A;
     const Vector3f E1 = C - A;
     return calcParallelogramArea(E0, E1) / 2;
@@ -20,9 +20,9 @@ inline static float calcTraingleArea(const Triangle& triangle) {
 
 /// @brief Computes the normalized surface normal of _triangle_ plane
 inline static Normal3f calcSurfaceNormal(const Triangle& triangle) {
-    const Vector3f& A = triangle.mesh->vertexPositions[triangle.indices[0]];
-    const Vector3f& B = triangle.mesh->vertexPositions[triangle.indices[1]];
-    const Vector3f& C = triangle.mesh->vertexPositions[triangle.indices[2]];
+    const Vector3f& A = triangle.mesh->vertPositions[triangle.indices[0]];
+    const Vector3f& B = triangle.mesh->vertPositions[triangle.indices[1]];
+    const Vector3f& C = triangle.mesh->vertPositions[triangle.indices[2]];
     const Vector3f E0 = B - A;
     const Vector3f E1 = C - A;
     return Normal3f(cross(E0, E1).normalize());
@@ -34,9 +34,9 @@ inline std::ostream& operator<<(std::ostream& out, const Vector3f& v) {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Triangle& triangle) {
-    out << "{A" << triangle.mesh->vertexPositions[triangle.indices[0]] << ", B"
-        << triangle.mesh->vertexPositions[triangle.indices[1]] << ", C"
-        << triangle.mesh->vertexPositions[triangle.indices[2]] << "}";
+    out << "{A" << triangle.mesh->vertPositions[triangle.indices[0]] << ", B"
+        << triangle.mesh->vertPositions[triangle.indices[1]] << ", C"
+        << triangle.mesh->vertPositions[triangle.indices[2]] << "}";
     return out;
 }
 

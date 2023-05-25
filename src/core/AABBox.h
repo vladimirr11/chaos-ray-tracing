@@ -43,12 +43,12 @@ struct BBox {
         max = maxPoint(max, p);
     }
 
-    /// @brief Verifies if ray intersects with the box
+    /// @brief Verifies if ray intersects with the box using Kay and Kajiya’s 
+    /// slab method
     /// source https://github.com/mmp/pbrt-v3/blob/master/src/core/geometry.h
     bool intersect(const Ray& ray) const {
         float t0 = 0, t1 = MAX_FLOAT;
         for (int i = 0; i < 3; i++) {
-            // Update interval for ith bounding box slab
             float invRayDir = 1 / ray.dir[i];
             float tNear = (min[i] - ray.origin[i]) * invRayDir;
             float tFar = (max[i] - ray.origin[i]) * invRayDir;
@@ -57,7 +57,7 @@ struct BBox {
                 std::swap(tNear, tFar);
             }
 
-            tFar *= 1 + 2 * gamma(3);  // Update tFar to ensure robust ray–bounds intersection
+            tFar *= 1 + 2 * gamma(3);  // Update tFar to ensure robust ray–bbox intersection
             t0 = tNear > t0 ? tNear : t0;
             t1 = tFar < t1 ? tFar : t1;
             if (t0 > t1) {

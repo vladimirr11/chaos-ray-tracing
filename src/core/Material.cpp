@@ -20,7 +20,7 @@ Color3f shadeDiffuseM([[maybe_unused]] const Ray& ray, const Scene* scene,
     const std::vector<Light>& lights = scene->getLights();
     const Color3f& albedo = scene->getMaterials()[isectData.materialIdx].albedo;
     bool smoothShading = scene->getMaterials()[isectData.materialIdx].smoothShading;
-    const Normal3f isectN = smoothShading ? isectData.smoothN : isectData.faceN;
+    const Normal3f isectN = smoothShading ? isectData.smoothNormal : isectData.faceNormal;
     using std::max;
     for (const Light& light : lights) {
         Vector3f lightDir = light.getPosition() - isectData.pos;
@@ -30,10 +30,9 @@ Color3f shadeDiffuseM([[maybe_unused]] const Ray& ray, const Scene* scene,
         const float cosTheta = max(0.f, dot(lightDirN, isectN));
         const Vector3f shadowRayOrig = isectData.pos + isectN * SHADOW_BIAS;
         const Ray shadowRay(shadowRayOrig, lightDirN);
+        shadowRay.tMax = lightDist;
         Color3f perLightColor;
-        Intersection shadowRayIsect;
-        shadowRayIsect.t = lightDist;
-        if (!scene->intersectPrim(shadowRay, shadowRayIsect)) {
+        if (!scene->intersectPrim(shadowRay)) {
             perLightColor = Color3f(light.getIntensity() / lightArea * albedo * cosTheta);
         }
         finalColor += perLightColor;
@@ -43,8 +42,8 @@ Color3f shadeDiffuseM([[maybe_unused]] const Ray& ray, const Scene* scene,
 }
 
 Color3f shadeReflectiveM(const Ray& ray, const Scene* scene, Intersection& isectData) {
-    const Vector3f reflectedDir = reflect(ray.dir, isectData.faceN).normalize();
-    Ray reflectedRay = Ray(isectData.pos + isectData.faceN * SHADOW_BIAS, reflectedDir);
+    const Vector3f reflectedDir = reflect(ray.dir, isectData.faceNormal).normalize();
+    Ray reflectedRay = Ray(isectData.pos + isectData.faceNormal * SHADOW_BIAS, reflectedDir);
     const Color3f& albedo = scene->getMaterials()[isectData.materialIdx].albedo;
     if (ray.depth < MAX_RAY_DEPTH && scene->intersect(reflectedRay, isectData)) {
         switch (scene->getMaterials()[isectData.materialIdx].type) {

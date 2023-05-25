@@ -45,9 +45,9 @@ public:
 
     /// @brief Verifies if ray intersects with any scene object. Returns true on first
     /// intersection, false if no ray-object intersection found
-    bool intersectPrim(const Ray& ray, Intersection& isect) const {
+    bool intersectPrim(const Ray& ray) const {
         for (const auto& mesh : sceneObjects) {
-            if (mesh.intersectPrim(ray, isect)) {
+            if (mesh.intersectPrim(ray)) {
                 return true;
             }
         }
