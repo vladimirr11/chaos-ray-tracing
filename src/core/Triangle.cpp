@@ -23,7 +23,7 @@ TriangleMesh::TriangleMesh(const std::vector<Point3f>& _vertPositions,
         vertNormals[vertIndices[i][2]] += faceNormal;
     }
 
-    // normalizes vertex normals and computes mesh bounds
+    // normalizes each vertex normal and computes mesh bounds
     for (size_t i = 0; i < vertNormals.size(); i++) {
         vertNormals[i].normalize();
         bounds.expandBy(vertPositions[i]);
@@ -63,7 +63,7 @@ bool TriangleMesh::intersectPrim(const Ray& ray) const {
     Intersection closestPrim;
     for (size_t i = 0; i < vertIndices.size(); i++) {
         const Triangle triangle(vertIndices[i], this);
-        if (triangle.intersectMT(ray, closestPrim) && closestPrim.t < ray.tMax) {
+        if (triangle.intersectMT(ray, closestPrim)) {
             return true;
         }
     }
