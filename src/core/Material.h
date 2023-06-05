@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include "Triangle.h"
+#include <string>
 
 struct Scene;
 
