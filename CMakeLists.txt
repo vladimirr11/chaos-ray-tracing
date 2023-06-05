@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(Shading_pt1 LANGUAGES CXX)
+project(Shading_pt2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
