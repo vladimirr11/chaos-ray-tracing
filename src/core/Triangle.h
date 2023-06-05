@@ -60,7 +60,7 @@ struct TriangleMesh {
 
     /// @brief Verifies if ray intersects with the mesh. Returns true on first intersection, false
     /// if no ray-triangle intersection found
-    bool intersectPrim(const Ray& ray) const;
+    bool intersectPrim(const Ray& ray, Intersection& isect) const;
 };
 
 #endif  // !TRIANGLE_H

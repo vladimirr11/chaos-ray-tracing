@@ -3,13 +3,6 @@
 
 #include "Vector3.h"
 
-enum class RayType {
-    CAMERA,      ///< Ray comming from the camera
-    SHADOW,      ///< Ray shading diffuse material
-    REFLECTION,  ///< Ray scattered from reflective material
-    UNDEFINED,
-};
-
 /// @brief Ray struct specified by its origin, direction, type and depth
 struct Ray {
     Point3f origin;

@@ -41,7 +41,7 @@ std::vector<Triangle> TriangleMesh::getTriangles() const {
 }
 
 bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
-    // early return if ray does not intersect with the mesh bounds
+    // early return if ray does not intersect with the object bounds
     if (!bounds.intersect(ray))
         return false;
 
@@ -55,15 +55,14 @@ bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
             hasIntersect = true;
         }
     }
-
+    
     return hasIntersect;
 }
 
-bool TriangleMesh::intersectPrim(const Ray& ray) const {
-    Intersection closestPrim;
+bool TriangleMesh::intersectPrim(const Ray& ray, Intersection& isect) const {
     for (size_t i = 0; i < vertIndices.size(); i++) {
         const Triangle triangle(vertIndices[i], this);
-        if (triangle.intersectMT(ray, closestPrim)) {
+        if (triangle.intersectMT(ray, isect)) {
             return true;
         }
     }
@@ -85,14 +84,17 @@ bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
     // area of the triangle x2
     float areaX2 = N.length();
 
+    // ray projection on the plane normal
+    const float rayProj = dot(N, ray.dir);
+
     // checks if the ray and plane are parallel
-    if (fabs(dot(N, ray.dir)) < EPSILON)
+    if (fabs(rayProj) < EPSILON)
         return false;
 
     float D = -dot(N, A);
 
     // finds the distance from the ray's origin to the intersection point
-    float t = -(dot(N, ray.origin) + D) / dot(N, ray.dir);
+    float t = -(dot(N, ray.origin) + D) / rayProj;
 
     // verifies that the triangle is not behind the ray's origin and the triangle
     // is ahead of the closest found so far
@@ -103,9 +105,8 @@ bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
     const Vector3f P = ray.at(t);
 
     // verifies if intersection point _P_ is on the left side of edge _E0_
-    const Vector3f E0 = AB;
     const Vector3f AP = P - A;
-    const Vector3f E0crossAP = cross(E0, AP);
+    const Vector3f E0crossAP = cross(AB, AP);
     if (dot(N, E0crossAP) < 0)
         return false;
 
@@ -171,7 +172,7 @@ bool Triangle::intersectMT(const Ray& ray, Intersection& isect) const {
         return false;
 
     // computes _t_ parameter and test that the triangle is not behind the
-    // ray's origin and the triangle is ahead of the closest found so far
+    // ray origin and the triangle is ahead of the closest found so far
     const float t = dot(AC, qVec) * invDet;
     if (t < 0 || t > ray.tMax)
         return false;

@@ -18,7 +18,8 @@ inline static Vector3<T> maxPoint(const Vector3<T>& p1, const Vector3<T>& p2) {
 }
 
 /// @brief Computes at compile time gamma coefficient that is used to bound
-/// the inherent IEEE floating-point arithmetic rounding error
+/// the inherent floating-point arithmetic rounding error
+/// source https://github.com/mmp/pbrt-v3/blob/master/src/core/pbrt.h
 inline constexpr float gamma(int n) { return (n * EPSILON) / (1 - n * EPSILON); }
 
 /// @brief Axis aligned bounding box represented by min & max corner points in 3D

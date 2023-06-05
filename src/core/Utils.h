@@ -63,8 +63,34 @@ inline static float clamp(const float low, const float high, const float value) 
 
 /// @brief Computes reflected ray given incident ray direction and hitted surface normal
 template <typename T>
-inline static Vector3<T> reflect(const Vector3<T>& incidentDir, const Vector3<T>& normal) {
-    return incidentDir - 2.f * dot(incidentDir, normal) * normal;
+inline static Vector3<T> reflect(const Vector3<T>& incRayDir, const Vector3<T>& surfNormal) {
+    return (incRayDir - 2.f * dot(incRayDir, surfNormal) * surfNormal).normalize();
+}
+
+/// @brief Computes refraction direction, if any
+/// @param incRayDir Incident ray direction
+/// @param surfNormal Surface normal at the hitted point
+/// @param eta The ratio of index of refraction of incident ray media and transmitted ray media
+/// @param cosThetaI Cosine between the incident ray and the surface normal
+/// @param refrRayDir [out] Normalized refraction direction
+/// @return True if no total internal refraction happens, false otherwise
+inline static bool refract(const Vector3f& incRayDir, const Normal3f& surfNormal, const float eta,
+                           const float cosThetaI, Vector3f* refrRayDir) {
+    const float sin2ThetaT = 1 - eta * eta * (1 - cosThetaI * cosThetaI);
+    if (sin2ThetaT < EPSILON)  // verifies for total internal reflection
+        return false;
+
+    const float cosThetaT = sqrtf(sin2ThetaT);
+    *refrRayDir = eta * incRayDir + (eta * cosThetaI - cosThetaT) * surfNormal;
+    refrRayDir->normalize();
+
+    return true;
+}
+
+/// @brief Computes approximation of the ratio of reflected and refracted light given
+/// incident ray direction and surface normal
+inline static float fresnel(const Vector3f& incRayDir, const Normal3f& surfNormal) {
+    return 0.5f * std::pow(1.f + dot(incRayDir, surfNormal), 5.f);
 }
 
 /// @brief Returns the number of available hardware threads

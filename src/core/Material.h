@@ -1,21 +1,28 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include <memory>
 #include "Triangle.h"
 
 struct Scene;
 
-enum class MaterialType { DIFFUSE, REFLECTIVE, UNDEFINED };
+enum class MaterialType : uint8_t { DIFFUSE, REFLECTIVE, REFRACTIVE, CONSTANT, UNDEFINED };
+
+/// @brief Union that holds the distinctive reflective/refractive property
+/// of the concrete material type. Index of refraction for refractive materials
+/// and albedo for the rest
+union MaterialProperty {
+    Color3f albedo = Color3f(0);
+    float ior;
+};
 
 /// @brief Class for a scene material
 struct Material {
-    Color3f albedo;
+    const MaterialProperty property;
     bool smoothShading = false;
     const MaterialType type = MaterialType::UNDEFINED;
 
-    Material(const Color3f& _albedo, bool _smoothShading, const MaterialType _type)
-        : albedo(_albedo), smoothShading(_smoothShading), type(_type) {}
+    Material(const MaterialProperty& _property, bool _smoothShading, const MaterialType _type)
+        : property(_property), smoothShading(_smoothShading), type(_type) {}
 
     /// @brief Shade an intersection
     /// @param ray The ray that created the intersection
@@ -25,21 +32,30 @@ struct Material {
     Color3f shade(const Ray& ray, const Scene* scene, Intersection& isectData) const;
 };
 
-inline static Material makeMaterial(std::string_view materialType, const Color3f& albedo,
+inline static Material makeMaterial(std::string_view materialType, const MaterialProperty& property,
                                     bool smoothShading) {
     MaterialType mtype = MaterialType::UNDEFINED;
     if (materialType == "diffuse") {
         mtype = MaterialType::DIFFUSE;
     } else if (materialType == "reflective") {
         mtype = MaterialType::REFLECTIVE;
+    } else if (materialType == "refractive") {
+        mtype = MaterialType::REFRACTIVE;
+    } else if (materialType == "constant") {
+        mtype = MaterialType::CONSTANT;
     } else {
-        Assert(mtype != MaterialType::UNDEFINED && "Recieved unsupported material type.");
+        Assert(mtype != MaterialType::UNDEFINED &&
+               "makeMaterial() recieved unsupported material type.");
     }
-    return Material(albedo, smoothShading, mtype);
+    return Material(property, smoothShading, mtype);
 }
 
-Color3f shadeDiffuseM(const Ray& ray, const Scene* scene, Intersection& isectData);
+Color3f shadeDiffuse(const Ray& ray, const Scene* scene, Intersection& isectData);
 
-Color3f shadeReflectiveM(const Ray& ray, const Scene* scene, Intersection& isectData);
+Color3f shadeReflective(const Ray& ray, const Scene* scene, Intersection& isectData);
+
+Color3f shadeRefractive(const Ray& ray, const Scene* scene, Intersection& isectData);
+
+Color3f shadeConstant(const Ray& ray, const Scene* scene, Intersection& isectData);
 
 #endif  // !MATERIAL_H

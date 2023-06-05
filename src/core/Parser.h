@@ -6,8 +6,8 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
-#include "../external_libs/rapidjson/document.h"
-#include "../external_libs/rapidjson/istreamwrapper.h"
+#include "external_libs/rapidjson/document.h"
+#include "external_libs/rapidjson/istreamwrapper.h"
 
 using namespace rapidjson;
 
@@ -199,9 +199,7 @@ public:
     }
 
     /// @brief Retrieves scene materials fron given input json
-    static int32_t parseMaterials(std::string_view inputFile,
-                                  //   std::vector<std::shared_ptr<Material>>& materials) {
-                                  std::vector<Material>& materials) {
+    static int32_t parseMaterials(std::string_view inputFile, std::vector<Material>& materials) {
         Document doc = getJsonDocument(inputFile);
 
         const Value& materialsInfo = doc.FindMember(SceneDefines::materialsInfo)->value;
@@ -219,8 +217,15 @@ public:
             }
 
             const Value& albedo = materialsInfo[i].FindMember(SceneDefines::materialAlbedo)->value;
-            if (!albedo.IsArray()) {
-                std::cerr << "Parser failed to parse material albedo." << std::endl;
+            const Value& ior = materialsInfo[i].FindMember(SceneDefines::materialIOR)->value;
+
+            MaterialProperty materialProp;
+            if (albedo.IsArray())
+                LIKELY { materialProp.albedo = loadVector(albedo.GetArray()); }
+            else if (ior.IsFloat()) {
+                materialProp.ior = ior.GetFloat();
+            } else {
+                std::cerr << "Parser failed to parse material albedo and ior." << std::endl;
                 return EXIT_FAILURE;
             }
 
@@ -230,8 +235,7 @@ public:
                 return EXIT_FAILURE;
             }
 
-            materials.emplace_back(
-                makeMaterial(mType.GetString(), loadVector(albedo.GetArray()), smooth.GetBool()));
+            materials.emplace_back(makeMaterial(mType.GetString(), materialProp, smooth.GetBool()));
         }
 
         return EXIT_SUCCESS;

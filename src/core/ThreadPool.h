@@ -38,28 +38,6 @@ public:
         workers.clear();
     }
 
-    /// @brief Parallelize a task by splitting it into blocks. Each block is then submitted to
-    /// the available threads
-    /// @tparam T The type of the indices in the loop
-    /// @tparam F The type of function to loop through
-    /// @param startIdx The first index in the loop
-    /// @param endIdx One past the last index in the loop
-    /// @param task The function to loop through
-    /// @param numBlocks The numbers of blocks to split the task into
-    template <typename T, typename F>
-    void runParallelFor(const T startIdx, const T endIdx, F&& task, size_t numBlocks = 0) {
-        if (numBlocks == 0)
-            numBlocks = threadsCount;
-
-        const size_t totalRunDist = (size_t)(endIdx - startIdx);
-        const size_t workerRunDist = totalRunDist / numBlocks;
-        for (size_t i = 0; i < numBlocks; i++) {
-            const size_t workerStartIdx = i * workerRunDist;
-            const size_t workerEndIdx = workerStartIdx + workerRunDist;
-            scheduleTask(std::forward<F>(task), (T)workerStartIdx, (T)workerEndIdx);
-        }
-    }
-
     /// @brief Wait for all tasks in the queue to complete
     void completeTasks() {
         for (;;) {

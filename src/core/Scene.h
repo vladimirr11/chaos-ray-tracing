@@ -43,11 +43,13 @@ public:
         return hasIntersect;
     }
 
-    /// @brief Verifies if ray intersects with any scene object. Returns true on first
-    /// intersection, false if no ray-object intersection found
+    /// @brief Verifies if ray intersects with any non transparent scene object.
+    /// Returns true on first intersection, false if no ray-object intersection found
     bool intersectPrim(const Ray& ray) const {
+        Intersection closestPrim;
         for (const auto& mesh : sceneObjects) {
-            if (mesh.intersectPrim(ray)) {
+            if (mesh.intersectPrim(ray, closestPrim) &&
+                materials[closestPrim.materialIdx].type != MaterialType::REFRACTIVE) {
                 return true;
             }
         }

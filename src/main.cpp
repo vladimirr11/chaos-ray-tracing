@@ -23,7 +23,7 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
     PPMImageI ppmImage(dimens.width, dimens.height);
 
     // initialize renderer
-    Renderer renderer(ppmImage, &scene, settings);
+    Renderer renderer(ppmImage, &scene);
 
     std::cout << "Loading " << ppmFileName << " scene...\nStart generating data...\n";
     {
@@ -51,20 +51,19 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 int main() {
     const std::vector<std::string> inputFiles = {
         "scenes/scene0.crtscene", "scenes/scene1.crtscene", "scenes/scene2.crtscene",
-        "scenes/scene3.crtscene", "scenes/scene4.crtscene", "scenes/scene5.crtscene"};
+        "scenes/scene3.crtscene", "scenes/scene4.crtscene", "scenes/scene5.crtscene",
+        "scenes/scene6.crtscene", "scenes/scene7.crtscene", "scenes/scene8.crtscene"};
 
     RenderSettings renderSettings;
-    
+
     ThreadPool pool(renderSettings.numThreads);
     pool.start();
 
-    for (int c = 0; const auto& file : inputFiles) {
-        renderSettings.shading = (c < 2) ? Shading::BARYCENTRIC : Shading::NONBARYCENTRIC;
+    for (const auto& file : inputFiles) {
         if (runRenderer(file, pool, renderSettings) != EXIT_SUCCESS) {
             std::cerr << "Failed to render file - " << file << std::endl;
             return EXIT_FAILURE;
         }
-        c++;
     }
 
     pool.stop();

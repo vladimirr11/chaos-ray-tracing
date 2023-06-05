@@ -5,6 +5,7 @@
 #include <limits>
 
 #define Assert(x) assert(x)
+#define LIKELY [[likely]]
 static constexpr float ASPECT_RATIO = 16.f / 9.f;
 static constexpr int IMG_WIDTH = 1920;
 static constexpr int IMG_HEIGHT = IMG_WIDTH / ASPECT_RATIO;
@@ -13,6 +14,8 @@ static constexpr int MAX_COLOR_COMP = 255;
 static constexpr float EPSILON = std::numeric_limits<float>::epsilon() * 0.5f;
 static constexpr float PI = 3.14159265358979323846;
 static constexpr float SHADOW_BIAS = 1e-2f;
+static constexpr float REFLECTION_BIAS = 1e-3f;
+static constexpr float REFRACTION_BIAS = 1e-3f;
 static constexpr int MAX_RAY_DEPTH = 5;
 static constexpr size_t PIXELS_PER_THREAD = 16;
 static constexpr float MAX_FLOAT = std::numeric_limits<float>::max();
@@ -30,6 +33,7 @@ namespace SceneDefines {
     inline const char* materialsInfo = "materials";
     inline const char* materialType = "type";
     inline const char* materialAlbedo = "albedo";
+    inline const char* materialIOR = "ior";
     inline const char* materialSmootSh = "smooth_shading";
     inline const char* cameraSettings = "camera";
     inline const char* cameraPos = "position";
