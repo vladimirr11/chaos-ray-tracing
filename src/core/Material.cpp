@@ -24,15 +24,13 @@ Color3f shadeDiffuse([[maybe_unused]] const Ray& ray, const Scene* scene, Inters
     const Color3f& albedo = scene->getMaterials()[isectData.materialIdx].property.albedo;
     bool smoothShading = scene->getMaterials()[isectData.materialIdx].smoothShading;
     const Normal3f isectNormal = smoothShading ? isectData.smoothNormal : isectData.faceNormal;
-    using std::max;
     for (const Light& light : lights) {
         Vector3f lightDir = light.getPosition() - isectData.pos;
         const float lightDist = lightDir.length();
         const float lightArea = calcSphereArea(lightDist);
         const Vector3f lightDirN = normalize(lightDir);
-        const float cosTheta = max(0.f, dot(lightDirN, isectNormal));
-        const Vector3f shadowRayOrig = isectData.pos + isectNormal * SHADOW_BIAS;
-        const Ray shadowRay(shadowRayOrig, lightDirN);
+        const float cosTheta = std::max(0.f, dot(lightDirN, isectNormal));
+        const Ray shadowRay(isectData.pos + isectNormal * SHADOW_BIAS, lightDirN);
         shadowRay.tMax = lightDist;
         Color3f perLightColor;
         if (!scene->intersectPrim(shadowRay)) {
@@ -68,7 +66,7 @@ Color3f shadeReflective(const Ray& ray, const Scene* scene, Intersection& isectD
 }
 
 Color3f shadeRefractive(const Ray& ray, const Scene* scene, Intersection& isectData) {
-    if (ray.depth < MAX_RAY_DEPTH) {
+    if (ray.depth <= MAX_RAY_DEPTH) {
         switch (scene->getMaterials()[isectData.materialIdx].type) {
         case MaterialType::REFLECTIVE:
         case MaterialType::DIFFUSE:
@@ -76,11 +74,11 @@ Color3f shadeRefractive(const Ray& ray, const Scene* scene, Intersection& isectD
         case MaterialType::CONSTANT:
             return shadeConstant(ray, scene, isectData);
         case MaterialType::REFRACTIVE: {
-            float cosThetaI = clamp(-1.f, 1.f, dot(ray.dir, isectData.faceNormal));
-            const float ior = scene->getMaterials()[isectData.materialIdx].property.ior;
-            float etaI = 1.f, etaT = ior;
             bool smoothShading = scene->getMaterials()[isectData.materialIdx].smoothShading;
             Normal3f surfNormal = smoothShading ? isectData.smoothNormal : isectData.faceNormal;
+            float cosThetaI = clamp(-1.f, 1.f, dot(ray.dir, surfNormal));
+            const float ior = scene->getMaterials()[isectData.materialIdx].property.ior;
+            float etaI = 1.f, etaT = ior;
             bool rayLeaveTransparent = cosThetaI > 0.f;
             if (rayLeaveTransparent) {
                 std::swap(etaI, etaT);
@@ -93,18 +91,20 @@ Color3f shadeRefractive(const Ray& ray, const Scene* scene, Intersection& isectD
             if (refract(ray.dir, surfNormal, etaI / etaT, cosThetaI, &refrRayDir)) {
                 Ray refractionRay =
                     Ray(isectData.pos + (-surfNormal * REFRACTION_BIAS), refrRayDir);
-                if (scene->intersect(refractionRay, isectData)) {
+                Intersection refrIsectData;
+                if (scene->intersect(refractionRay, refrIsectData)) {
                     refractionRay.depth = ray.depth + 1;
-                    refractColor = shadeRefractive(refractionRay, scene, isectData);
+                    refractColor = shadeRefractive(refractionRay, scene, refrIsectData);
                 } else {
                     refractColor = scene->getBackground();
                 }
 
                 const Vector3f reflRayDir = reflect(ray.dir, surfNormal);
                 Ray reflectionRay = Ray(isectData.pos + (surfNormal * REFLECTION_BIAS), reflRayDir);
-                if (scene->intersect(reflectionRay, isectData)) {
+                Intersection reflIsectData;
+                if (scene->intersect(reflectionRay, reflIsectData)) {
                     reflectionRay.depth = ray.depth + 1;
-                    reflectColor = shadeRefractive(reflectionRay, scene, isectData);
+                    reflectColor = shadeRefractive(reflectionRay, scene, reflIsectData);
                 } else {
                     reflectColor = scene->getBackground();
                 }
@@ -114,9 +114,10 @@ Color3f shadeRefractive(const Ray& ray, const Scene* scene, Intersection& isectD
             } else {
                 const Vector3f reflRayDir = reflect(ray.dir, surfNormal);
                 Ray reflectionRay = Ray(isectData.pos + (surfNormal * REFLECTION_BIAS), reflRayDir);
-                if (scene->intersect(reflectionRay, isectData)) {
+                Intersection reflIsectData;
+                if (scene->intersect(reflectionRay, reflIsectData)) {
                     reflectionRay.depth = ray.depth + 1;
-                    return shadeRefractive(reflectionRay, scene, isectData);
+                    return shadeRefractive(reflectionRay, scene, reflIsectData);
                 } else {
                     return scene->getBackground();
                 }

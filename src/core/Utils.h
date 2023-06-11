@@ -28,18 +28,6 @@ inline static Normal3f calcSurfaceNormal(const Triangle& triangle) {
     return Normal3f(cross(E0, E1).normalize());
 }
 
-inline std::ostream& operator<<(std::ostream& out, const Vector3f& v) {
-    out << "{" << v.x << ", " << v.y << ", " << v.z << "}";
-    return out;
-}
-
-inline std::ostream& operator<<(std::ostream& out, const Triangle& triangle) {
-    out << "{A" << triangle.mesh->vertPositions[triangle.indices[0]] << ", B"
-        << triangle.mesh->vertPositions[triangle.indices[1]] << ", C"
-        << triangle.mesh->vertPositions[triangle.indices[2]] << "}";
-    return out;
-}
-
 /// @brief Retrieves ray directed at the center of a pixel based on the coordinates of
 /// that pixel in the scene
 inline static Ray getScreenRay(const int row, const int col) {
@@ -61,7 +49,7 @@ inline static float clamp(const float low, const float high, const float value) 
     return std::max(low, std::min(high, value));
 }
 
-/// @brief Computes reflected ray given incident ray direction and hitted surface normal
+/// @brief Computes reflected ray direction given incident ray direction and hitted surface normal
 template <typename T>
 inline static Vector3<T> reflect(const Vector3<T>& incRayDir, const Vector3<T>& surfNormal) {
     return (incRayDir - 2.f * dot(incRayDir, surfNormal) * surfNormal).normalize();
@@ -76,11 +64,11 @@ inline static Vector3<T> reflect(const Vector3<T>& incRayDir, const Vector3<T>& 
 /// @return True if no total internal refraction happens, false otherwise
 inline static bool refract(const Vector3f& incRayDir, const Normal3f& surfNormal, const float eta,
                            const float cosThetaI, Vector3f* refrRayDir) {
-    const float sin2ThetaT = 1 - eta * eta * (1 - cosThetaI * cosThetaI);
-    if (sin2ThetaT < EPSILON)  // verifies for total internal reflection
+    const float cos2ThetaT = 1 - eta * eta * (1 - cosThetaI * cosThetaI);
+    if (cos2ThetaT < EPSILON)  // verifies for total internal reflection
         return false;
 
-    const float cosThetaT = sqrtf(sin2ThetaT);
+    const float cosThetaT = sqrtf(cos2ThetaT);
     *refrRayDir = eta * incRayDir + (eta * cosThetaI - cosThetaT) * surfNormal;
     refrRayDir->normalize();
 
@@ -90,7 +78,7 @@ inline static bool refract(const Vector3f& incRayDir, const Normal3f& surfNormal
 /// @brief Computes approximation of the ratio of reflected and refracted light given
 /// incident ray direction and surface normal
 inline static float fresnel(const Vector3f& incRayDir, const Normal3f& surfNormal) {
-    return 0.5f * std::pow(1.f + dot(incRayDir, surfNormal), 5.f);
+    return 0.5f * powf(1.f + dot(incRayDir, surfNormal), 5.f);
 }
 
 /// @brief Returns the number of available hardware threads
