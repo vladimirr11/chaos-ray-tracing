@@ -1,8 +1,8 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "Triangle.h"
 #include <string>
+#include "Triangle.h"
 
 struct Scene;
 
@@ -52,11 +52,8 @@ inline static Material makeMaterial(std::string_view materialType, const Materia
 }
 
 Color3f shadeDiffuse(const Ray& ray, const Scene* scene, Intersection& isectData);
-
 Color3f shadeReflective(const Ray& ray, const Scene* scene, Intersection& isectData);
-
 Color3f shadeRefractive(const Ray& ray, const Scene* scene, Intersection& isectData);
-
 Color3f shadeConstant(const Ray& ray, const Scene* scene, Intersection& isectData);
 
 #endif  // !MATERIAL_H

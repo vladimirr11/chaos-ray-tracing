@@ -1,7 +1,10 @@
 #include "core/Renderer.h"
+#include "core/Statistics.h"
+
+// #define staticRender
 
 static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
-                           const RenderSettings& settings) {
+                           RenderSettings& settings) {
     const std::string ppmFileName = getPpmFileName(inputFile);
     std::ofstream ppmImageFile(ppmFileName, std::ios::out | std::ios::binary);
     if (!ppmImageFile.good()) {
@@ -25,21 +28,32 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
     // initialize renderer
     Renderer renderer(ppmImage, &scene);
 
+    settings.numPixelsPerThread = scene.getSceneSettings().bucketSize;
+
     std::cout << "Loading " << ppmFileName << " scene...\nStart generating data...\n";
     {
         Timer timer;
+        timer.start();
 
+#ifdef staticRender
         for (size_t threadId = 0; threadId < settings.numThreads; threadId++) {
-            auto renderTask = std::bind(&Renderer::render, renderer, threadId, settings.numThreads,
-                                        settings.numPixelsPerThread);
+            auto renderTask = std::bind(&Renderer::renderStatic, &renderer, threadId,
+                                        settings.numThreads, settings.numPixelsPerThread);
             pool.scheduleTask(renderTask);
         }
-
+#else
+        using namespace std::placeholders;
+        auto renderTask = std::bind(&Renderer::renderRegion, &renderer, _1, _2, _3, _4);
+        pool.parallelLoop2D(renderTask, (size_t)dimens.width, (size_t)dimens.height,
+                            settings.numPixelsPerThread);
+#endif
         pool.completeTasks();
 
-        std::cout << ppmFileName << " data generated in ["
+        std::cout << ppmFileName << " data generated in [" << std::fixed << std::setprecision(2)
                   << Timer::toMilliSec<float>(timer.getElapsedNanoSec()) << "ms] on "
                   << settings.numThreads << " threads\n";
+
+        flushStatistics();
     }
 
     serializePPMImage(ppmImageFile, ppmImage);
@@ -49,10 +63,7 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 }
 
 int main() {
-    const std::vector<std::string> inputFiles = {
-        "scenes/scene0.crtscene", "scenes/scene1.crtscene", "scenes/scene2.crtscene",
-        "scenes/scene3.crtscene", "scenes/scene4.crtscene", "scenes/scene5.crtscene",
-        "scenes/scene6.crtscene", "scenes/scene7.crtscene", "scenes/scene8.crtscene"};
+    const std::vector<std::string> inputFiles = {"scenes/scene10.crtscene"};
 
     RenderSettings renderSettings;
 

@@ -44,7 +44,7 @@ struct BBox {
         max = maxPoint(max, p);
     }
 
-    /// @brief Verifies if ray intersects with the box using Kay and Kajiya’s 
+    /// @brief Verifies if ray intersects with the box using Kay and Kajiya’s
     /// slab method
     /// source https://github.com/mmp/pbrt-v3/blob/master/src/core/geometry.h
     bool intersect(const Ray& ray) const {

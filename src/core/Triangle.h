@@ -32,10 +32,10 @@ struct Triangle {
         : indices(_indices.data()), mesh(_mesh){};
 
     /// @brief Verifies if ray intersect with the triangle
-    bool intersect(const Ray& ray, Intersection& isect) const;
+    bool __forceinline intersect(const Ray& ray, Intersection& isect) const;
 
     /// @brief Verifies if ray intersect with the triangle using Moller-Trumbor method
-    bool intersectMT(const Ray& ray, Intersection& isect) const;
+    bool __forceinline intersectMT(const Ray& ray, Intersection& isect) const;
 };
 
 /// @brief Triangle mesh class that stores information for each object in the scene

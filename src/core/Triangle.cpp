@@ -1,5 +1,9 @@
 #include "Triangle.h"
 #include "Material.h"
+#include "Statistics.h"
+
+STAT(NUM_TRIANGLE_ISECT_TESTS, numTriIsectTests, triIsectTestRegisterer);
+STAT(NUM_TRIANGLE_ISECTS, numTriIsects, isectRegisterer);
 
 TriangleMesh::TriangleMesh(const std::vector<Point3f>& _vertPositions,
                            const std::vector<TriangleIndices>& _vertIndices,
@@ -42,8 +46,8 @@ std::vector<Triangle> TriangleMesh::getTriangles() const {
 
 bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
     // early return if ray does not intersect with the object bounds
-    if (!bounds.intersect(ray))
-        return false;
+    // if (!bounds.intersect(ray))
+    //     return false;
 
     bool hasIntersect = false;
     for (size_t i = 0; i < vertIndices.size(); i++) {
@@ -55,7 +59,7 @@ bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
             hasIntersect = true;
         }
     }
-    
+
     return hasIntersect;
 }
 
@@ -70,6 +74,7 @@ bool TriangleMesh::intersectPrim(const Ray& ray, Intersection& isect) const {
 }
 
 bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
+    ++numTriIsectTests;
     // takes out the triangle's vertices
     const Vector3f& A = mesh->vertPositions[indices[0]];
     const Vector3f& B = mesh->vertPositions[indices[1]];
@@ -138,10 +143,13 @@ bool Triangle::intersect(const Ray& ray, Intersection& isect) const {
     isect.smoothNormal = v1N * isect.u + v2N * isect.v + v0N * (1 - isect.u - isect.v);
     isect.materialIdx = mesh->materialIdx;
 
+    ++numTriIsects;
+
     return true;
 }
 
 bool Triangle::intersectMT(const Ray& ray, Intersection& isect) const {
+    ++numTriIsectTests;
     // takes out the triangle's vertices
     const Vector3f& A = mesh->vertPositions[indices[0]];
     const Vector3f& B = mesh->vertPositions[indices[1]];
@@ -196,6 +204,8 @@ bool Triangle::intersectMT(const Ray& ray, Intersection& isect) const {
     isect.v = v;
     isect.smoothNormal = v1N * isect.u + v2N * isect.v + v0N * (1 - isect.u - isect.v);
     isect.materialIdx = mesh->materialIdx;
+
+    ++numTriIsects;
 
     return true;
 }

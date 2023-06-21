@@ -1,9 +1,10 @@
 #include "Material.h"
 #include "Scene.h"
+#include "Statistics.h"
 
 Color3f Material::shade(const Ray& ray, const Scene* scene, Intersection& isectData) const {
     Color3f shadeColor;
-    const MaterialType& hittedMaterialType = scene->getMaterials()[isectData.materialIdx].type;
+    const MaterialType hittedMaterialType = scene->getMaterials()[isectData.materialIdx].type;
     if (hittedMaterialType == MaterialType::DIFFUSE) {
         shadeColor = shadeDiffuse(ray, scene, isectData);
     } else if (hittedMaterialType == MaterialType::REFLECTIVE) {

@@ -60,6 +60,8 @@ public:
 
     const SceneDimensions& getSceneDimensions() const { return settings.sceneDimensions; }
 
+    const SceneSettings& getSceneSettings() const { return settings; }
+
     const Camera& getCamera() const { return camera; }
 
     const std::vector<Light>& getLights() const { return sceneLights; }

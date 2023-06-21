@@ -4,11 +4,13 @@
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
-#include <functional>
-#include <mutex>
 #include <queue>
 #include <thread>
 #include "Defines.h"
+#include "Statistics.h"
+
+/// @brief Helps to measure the active running time for each thread when work is assigned
+static thread_local bool threadBeginWork = false;
 
 /// @brief Simple thread pool class
 class ThreadPool {
@@ -40,11 +42,33 @@ public:
 
     /// @brief Wait for all tasks in the queue to complete
     void completeTasks() {
+        shouldCompleteTasks = true;
         for (;;) {
-            if (numTasks == 0) {
+            if (numTasks == 0 && activeWorkers == 0) {
+                shouldCompleteTasks = false;
                 break;
             }
             std::this_thread::yield();
+        }
+    }
+
+    /// @brief Divides 2D loop into _tileSize_ 2D chunks of work. Only the last chunks
+    /// per dimension could be with different sizes
+    /// @tparam F The type of the function
+    /// @param task The function to submit to the tasks queue
+    /// @param loopWidth The second dimension of the loop
+    /// @param loopHeight The first dimension of the loop
+    /// @param tileSize The amount of work per dimension for thread
+    template <typename F>
+    void parallelLoop2D(F&& task, const size_t loopWidth, const size_t loopHeight,
+                        const size_t tileSize) {
+        using std::min;
+        for (size_t y0 = 0, y1 = tileSize; y0 < y1;
+             y0 = y0 + tileSize, y1 = min(y1 + tileSize, loopHeight)) {
+            for (size_t x0 = 0, x1 = tileSize; x0 < x1;
+                 x0 = x0 + tileSize, x1 = min(x1 + tileSize, loopWidth)) {
+                scheduleTask(std::forward<F>(task), x0, x1, y0, y1);
+            }
         }
     }
 
@@ -73,14 +97,25 @@ private:
             std::function<void()> task;
             {
                 std::unique_lock<std::mutex> lock(tasksMutex);
+                if (shouldCompleteTasks && tasksQueue.empty()) {
+                    threadBeginWork = false;
+                    reportThreadStats();
+                    --activeWorkers;
+                }
                 workersCv.wait(lock, [this] { return !tasksQueue.empty() || !running; });
                 if (!running)
                     return;
                 task = std::move(tasksQueue.front());
                 tasksQueue.pop();
+                lock.unlock();
+                if (!threadBeginWork) {
+                    ++activeWorkers;
+                    threadEntryPoint();
+                }
+                threadBeginWork = true;
+                task();
+                --numTasks;
             }
-            task();
-            --numTasks;
         }
     }
 
@@ -88,19 +123,26 @@ private:
     /// @brief Thread handles
     std::vector<std::thread> workers{};
 
-    /// @brief A mutex to synchronize access to tasks queue by different threads
+    /// @brief Mutex to synchronize access to tasks queue by different threads
     mutable std::mutex tasksMutex{};
 
-    /// @brief A queue of tasks to be executed by the workers
+    /// @brief Queue of tasks to be executed by the workers
     std::queue<std::function<void()>> tasksQueue{};
 
-    /// @brief A condition variable used to notify worker that a new task has become available
+    /// @brief Condition variable used to notify worker that a new task has become available
     std::condition_variable workersCv{};
 
-    /// @brief An atomic bool variable indicating if workers should quit
+    /// @brief Atomic bool variable indicating if workers should quit
     std::atomic_bool running = false;
 
-    /// @brief Number of tasks in the queue to execute
+    /// @brief Boolean flag indicating that tasks have been issued and
+    /// the main thread waits for their completion
+    std::atomic_bool shouldCompleteTasks = false;
+
+    /// @brief The number of threads that have assigned work
+    std::atomic_size_t activeWorkers{};
+
+    /// @brief Number of tasks in the queue
     std::atomic_size_t numTasks{};
 
     /// @brief Number of threads

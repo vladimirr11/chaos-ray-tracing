@@ -5,7 +5,14 @@
 
 class Timer {
 public:
-    Timer() : start(clock::now()) {}
+    Timer() {}
+
+    void start() { startPoint = clock::now(); }
+
+    template <typename T>
+    static T toSec(T nanosec) {
+        return T(nanosec / 1e9);
+    }
 
     template <typename T>
     static T toMilliSec(T nanosec) {
@@ -21,14 +28,14 @@ public:
     /// time of call to this function.
     int64_t getElapsedNanoSec() const {
         const clock::time_point now = clock::now();
-        return std::chrono::duration_cast<nanosec>(now - start).count();
+        return std::chrono::duration_cast<nanosec>(now - startPoint).count();
     }
 
 private:
     using clock = std::chrono::steady_clock;
     using nanosec = std::chrono::nanoseconds;
 
-    clock::time_point start;  ///< Timer start point
+    clock::time_point startPoint;  ///< Timer start point
 };
 
 #endif  // !TIMER_H

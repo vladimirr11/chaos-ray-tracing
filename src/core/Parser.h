@@ -13,14 +13,15 @@ using namespace rapidjson;
 
 /// @brief Stores scene's width and height
 struct SceneDimensions {
-    int width{};
-    int height{};
+    int32_t width = 0;
+    int32_t height = 0;
 };
 
 /// @brief Records global scene settings
 struct SceneSettings {
     Color3f backgrColor;
     SceneDimensions sceneDimensions;
+    size_t bucketSize = 0;
 };
 
 inline static Vector3f loadVector(const Value::ConstArray& valArr) {
@@ -157,6 +158,15 @@ public:
 
         /// set scene width & height
         settings.sceneDimensions = parseSceneDimensions(inputFile);
+
+        const Value& imageSettings = sceneSettings.FindMember(SceneDefines::imageSettings)->value;
+        const Value& bucketSize = imageSettings.FindMember(SceneDefines::bucketSize)->value;
+        if (!bucketSize.IsInt()) {
+            std::cerr << "Parser failed to parse scene bucket size." << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        settings.bucketSize = bucketSize.GetInt();
 
         return EXIT_SUCCESS;
     }
