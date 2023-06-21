@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(Shading_pt2 LANGUAGES CXX)
+project(Multithreading LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
@@ -27,6 +27,8 @@ add_executable(
         ${_SRC_DIR}/core/Material.cpp
         ${_SRC_DIR}/core/Renderer.h
         ${_SRC_DIR}/core/AABBox.h
+        ${_SRC_DIR}/core/Statistics.h
+        ${_SRC_DIR}/core/Statistics.cpp
 
         ${_SRC_DIR}/main.cpp
 )
