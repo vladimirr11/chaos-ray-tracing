@@ -1,7 +1,7 @@
 #include "core/Renderer.h"
 #include "core/Statistics.h"
 
-// #define staticRender
+// #define RENDER_STATIC
 
 static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
                            RenderSettings& settings) {
@@ -35,7 +35,7 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
         Timer timer;
         timer.start();
 
-#ifdef staticRender
+#ifdef RENDER_STATIC
         for (size_t threadId = 0; threadId < settings.numThreads; threadId++) {
             auto renderTask = std::bind(&Renderer::renderStatic, &renderer, threadId,
                                         settings.numThreads, settings.numPixelsPerThread);
@@ -45,7 +45,7 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
         using namespace std::placeholders;
         auto renderTask = std::bind(&Renderer::renderRegion, &renderer, _1, _2, _3, _4);
         pool.parallelLoop2D(renderTask, (size_t)dimens.width, (size_t)dimens.height,
-                            settings.numPixelsPerThread);
+                            settings.numPixelsPerThread, settings.numPixelsPerThread);
 #endif
         pool.completeTasks();
 

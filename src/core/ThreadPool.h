@@ -52,21 +52,22 @@ public:
         }
     }
 
-    /// @brief Divides 2D loop into _tileSize_ 2D chunks of work. Only the last chunks
-    /// per dimension could be with different sizes
+    /// @brief Divides 2D loop into [_tileWidth_ * _tileHeight_] 2D chunks of work.
+    /// Only the last chunks per dimension could be with different sizes
     /// @tparam F The type of the function
     /// @param task The function to submit to the tasks queue
-    /// @param loopWidth The second dimension of the loop
-    /// @param loopHeight The first dimension of the loop
-    /// @param tileSize The amount of work per dimension for thread
+    /// @param loopWidth The length of the second dimension of the loop
+    /// @param loopHeight The length of the first dimension of the loop
+    /// @param tileWidth The width of the chunk for thread
+    /// @param tileHeight The height of the chunk for thread
     template <typename F>
     void parallelLoop2D(F&& task, const size_t loopWidth, const size_t loopHeight,
-                        const size_t tileSize) {
+                        const size_t tileWidth, const size_t tileHeight) {
         using std::min;
-        for (size_t y0 = 0, y1 = tileSize; y0 < y1;
-             y0 = y0 + tileSize, y1 = min(y1 + tileSize, loopHeight)) {
-            for (size_t x0 = 0, x1 = tileSize; x0 < x1;
-                 x0 = x0 + tileSize, x1 = min(x1 + tileSize, loopWidth)) {
+        for (size_t y0 = 0, y1 = tileHeight; y0 < y1;
+             y0 = y0 + tileHeight, y1 = min(y1 + tileHeight, loopHeight)) {
+            for (size_t x0 = 0, x1 = tileWidth; x0 < x1;
+                 x0 = x0 + tileWidth, x1 = min(x1 + tileWidth, loopWidth)) {
                 scheduleTask(std::forward<F>(task), x0, x1, y0, y1);
             }
         }

@@ -46,8 +46,8 @@ std::vector<Triangle> TriangleMesh::getTriangles() const {
 
 bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
     // early return if ray does not intersect with the object bounds
-    // if (!bounds.intersect(ray))
-    //     return false;
+    if (!bounds.intersect(ray))
+        return false;
 
     bool hasIntersect = false;
     for (size_t i = 0; i < vertIndices.size(); i++) {
