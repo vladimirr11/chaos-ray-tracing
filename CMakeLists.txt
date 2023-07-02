@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(Multithreading LANGUAGES CXX)
+project(Acceleration LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "-Wall -g -O2")
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
 set(_EXTERNAL_LIBS ${_SRC_DIR}/external_libs)
 
@@ -20,15 +20,21 @@ add_executable(
         ${_SRC_DIR}/core/Matrix3x3.h
         ${_SRC_DIR}/core/Matrix3x3.cpp
         ${_SRC_DIR}/core/Camera.h
+        ${_SRC_DIR}/core/Camera.cpp
         ${_SRC_DIR}/core/Parser.h
+        ${_SRC_DIR}/core/Parser.cpp
         ${_SRC_DIR}/core/Scene.h
+        ${_SRC_DIR}/core/Scene.cpp
         ${_SRC_DIR}/core/Light.h
         ${_SRC_DIR}/core/Material.h
         ${_SRC_DIR}/core/Material.cpp
         ${_SRC_DIR}/core/Renderer.h
+        ${_SRC_DIR}/core/Renderer.cpp
         ${_SRC_DIR}/core/AABBox.h
         ${_SRC_DIR}/core/Statistics.h
         ${_SRC_DIR}/core/Statistics.cpp
+        ${_SRC_DIR}/core/AccelerationTree.h
+        ${_SRC_DIR}/core/AccelerationTree.cpp
 
         ${_SRC_DIR}/main.cpp
 )
