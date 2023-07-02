@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <thread>
 #include <vector>
 
 enum StatTest { NUM_TRIANGLE_ISECT_TESTS, NUM_TRIANGLE_ISECTS, NUM_TESTS };
@@ -50,11 +51,11 @@ private:
 void threadEntryPoint();
 
 /// @brief Called when thread finish work
-void threadExitPoint();
+void threadExitPoint(const std::thread::id& threadId);
 
 /// @brief When called per thread statistics is accumulated in the static storage and
 /// each thread reports its running time
-void reportThreadStats();
+void reportThreadStats(const std::thread::id& threadId);
 
 /// @brief Prints the collected statistics
 void flushStatistics();

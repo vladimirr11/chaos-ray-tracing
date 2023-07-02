@@ -8,8 +8,6 @@ StatRegisterer::DataArray StatRegisterer::statsData;
 StatRegisterer::CallbacksArray* StatRegisterer::callbacks;
 
 StatRegisterer::StatRegisterer(std::function<void()> f) {
-    static std::mutex mutex;
-    std::lock_guard<std::mutex> lock(mutex);
     if (!callbacks)
         callbacks = new CallbacksArray;
     callbacks->push_back(f);
@@ -17,21 +15,19 @@ StatRegisterer::StatRegisterer(std::function<void()> f) {
 
 void StatRegisterer::printStats() {
     std::cout << "Ray-triangle intersection tests: " << statsData[NUM_TRIANGLE_ISECT_TESTS] << "\n"
-              << "Actual ray-trinagle intersections: " << statsData[NUM_TRIANGLE_ISECTS]
-              << std::endl;
+              << "Actual ray-trinagle intersections: " << statsData[NUM_TRIANGLE_ISECTS] << "\n";
 }
 
 void threadEntryPoint() { threadRunTimeTimer.start(); }
 
-void threadExitPoint() {
-    std::cout << std::fixed << std::setprecision(2) << "Thread render time ["
-              << Timer::toMilliSec<float>(threadRunTimeTimer.getElapsedNanoSec()) << "ms]"
-              << std::endl;
+void threadExitPoint(const std::thread::id& threadId) {
+    std::cout << std::fixed << std::setprecision(2) << "Thread " << threadId << " render time ["
+              << Timer::toMilliSec<float>(threadRunTimeTimer.getElapsedNanoSec()) << "ms]\n";
 }
 
-void reportThreadStats() {
+void reportThreadStats(const std::thread::id& threadId) {
     StatRegisterer::invokeCallbacks();
-    threadExitPoint();
+    threadExitPoint(threadId);
 }
 
 void flushStatistics() {

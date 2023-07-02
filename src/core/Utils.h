@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <iostream>
 #include <thread>
 #include "Triangle.h"
@@ -94,3 +97,16 @@ inline static std::string getPpmFileName(const std::string& inputFile) {
         return inputFile.substr(0, end) + ".ppm";
     return inputFile.substr(start + 1, end - start - 1) + ".ppm";
 }
+
+/// @brief Retrieves AABB for give triangle
+inline static BBox getTriangleBBox(const Triangle& triangle) {
+    const Vector3f& A = triangle.mesh->vertPositions[triangle.indices[0]];
+    const Vector3f& B = triangle.mesh->vertPositions[triangle.indices[1]];
+    const Vector3f& C = triangle.mesh->vertPositions[triangle.indices[2]];
+    BBox triangleBBox;
+    triangleBBox.min = minPoint(A, minPoint(B, C));
+    triangleBBox.max = maxPoint(A, maxPoint(B, C));
+    return triangleBBox;
+}
+
+#endif  // !UTILS_H

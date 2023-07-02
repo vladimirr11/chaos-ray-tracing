@@ -1,5 +1,8 @@
 #include "core/Renderer.h"
+#include "core/Scene.h"
 #include "core/Statistics.h"
+#include "core/ThreadPool.h"
+#include "core/Timer.h"
 
 // #define RENDER_STATIC
 
@@ -19,7 +22,7 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
     }
 
     // initialize scene
-    const Scene scene(sceneParams);
+    Scene scene(sceneParams);
 
     // initialize image
     const SceneDimensions dimens = scene.getSceneDimensions();
@@ -30,8 +33,10 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 
     settings.numPixelsPerThread = scene.getSceneSettings().bucketSize;
 
-    std::cout << "Loading " << ppmFileName << " scene...\nStart generating data...\n";
+    std::cout << "Loading " << ppmFileName << " scene...\n";
+    scene.createAccelTree();
     {
+        std::cout << "Start generating data...\n";
         Timer timer;
         timer.start();
 
@@ -63,7 +68,9 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 }
 
 int main() {
-    const std::vector<std::string> inputFiles = {"scenes/scene10.crtscene"};
+    const std::vector<std::string> inputFiles = {
+        "C:/Users/user/C++_Projects/Chaos_Ray_Tracing_2023/11.Acceleration_Structures/"
+        "scenes/scene1.crtscene"};
 
     RenderSettings renderSettings;
 

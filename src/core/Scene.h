@@ -1,6 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "AccelerationTree.h"
 #include "Parser.h"
 
 /// @brief Stores parameters needed for initialization of scene object
@@ -17,44 +18,17 @@ public:
     Scene() = delete;
 
     /// @brief Initialize scene data members from input json
-    Scene(const SceneParams& sceneParams)
-        : camera(std::move(sceneParams.camera)),
-          sceneObjects(std::move(sceneParams.objects)),
-          sceneLights(std::move(sceneParams.lights)),
-          materials(std::move(sceneParams.materials)),
-          settings(std::move(sceneParams.settings)) {}
+    Scene(const SceneParams& sceneParams);
+
+    /// @brief Constructs the acceleration tree
+    void createAccelTree();
 
     /// @brief Intersects ray with the scene and finds the closest intersection point if any
-    bool intersect(const Ray& ray, Intersection& isect) const {
-        bool hasIntersect = false;
-        Intersection closestPrim;
-        for (const auto& mesh : sceneObjects) {
-            if (mesh.intersect(ray, isect)) {
-                if (isect.t < closestPrim.t) {
-                    closestPrim = isect;
-                }
-                hasIntersect = true;
-            }
-        }
-
-        if (hasIntersect)
-            isect = closestPrim;
-
-        return hasIntersect;
-    }
+    bool intersect(const Ray& ray, Intersection& isect) const;
 
     /// @brief Verifies if ray intersects with any non transparent scene object.
     /// Returns true on first intersection, false if no ray-object intersection found
-    bool intersectPrim(const Ray& ray) const {
-        Intersection closestPrim;
-        for (const auto& mesh : sceneObjects) {
-            if (mesh.intersectPrim(ray, closestPrim) &&
-                materials[closestPrim.materialIdx].type != MaterialType::REFRACTIVE) {
-                return true;
-            }
-        }
-        return false;
-    }
+    bool intersectPrim(const Ray& ray) const;
 
     const Color3f& getBackground() const { return settings.backgrColor; }
 
@@ -76,6 +50,8 @@ private:
     const std::vector<Light> sceneLights;          ///< Lights in the scene
     const std::vector<Material> materials;         ///< List of the scene's materials
     const SceneSettings settings;                  ///< Global scene settings
+    std::unique_ptr<AccelTree> accelTree;          ///< The acceleration tree of the scene
+    BBox sceneBBox;  ///< AABB of the entire scene. Computed only when acceleration tree is build
 };
 
 /// @brief Retrieves scene parameters from given input json

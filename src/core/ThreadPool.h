@@ -100,7 +100,7 @@ private:
                 std::unique_lock<std::mutex> lock(tasksMutex);
                 if (shouldCompleteTasks && tasksQueue.empty()) {
                     threadBeginWork = false;
-                    reportThreadStats();
+                    reportThreadStats(std::this_thread::get_id());
                     --activeWorkers;
                 }
                 workersCv.wait(lock, [this] { return !tasksQueue.empty() || !running; });

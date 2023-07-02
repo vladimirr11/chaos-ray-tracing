@@ -26,16 +26,16 @@ struct Triangle {
     const int* indices;        ///< Indices of the triangle's vertices in the mesh
     const TriangleMesh* mesh;  ///< The triangle's owner mesh
 
-    Triangle() = delete;
+    Triangle() = default;
 
     Triangle(const TriangleIndices& _indices, const TriangleMesh* _mesh)
         : indices(_indices.data()), mesh(_mesh){};
 
     /// @brief Verifies if ray intersect with the triangle
-    bool __forceinline intersect(const Ray& ray, Intersection& isect) const;
+    bool intersect(const Ray& ray, Intersection& isect) const;
 
     /// @brief Verifies if ray intersect with the triangle using Moller-Trumbor method
-    bool __forceinline intersectMT(const Ray& ray, Intersection& isect) const;
+    bool intersectMT(const Ray& ray, Intersection& isect) const;
 };
 
 /// @brief Triangle mesh class that stores information for each object in the scene
@@ -52,8 +52,11 @@ struct TriangleMesh {
     TriangleMesh(const std::vector<Point3f>& _vertPositions,
                  const std::vector<TriangleIndices>& _vertIndices, const int32_t _materialIdx);
 
-    /// @brief Retrieves list of all triangles in the mesh upon request
+    /// @brief Retrieves a list of all triangles in the mesh upon request
     std::vector<Triangle> getTriangles() const;
+
+    /// @brief Retrieves all triangles in the mesh into _dest_ vector
+    void retrieveTriangles(std::vector<Triangle>& dest) const;
 
     /// @brief Intersects ray with the mesh and records closest intersection point if any
     bool intersect(const Ray& ray, Intersection& isect) const;

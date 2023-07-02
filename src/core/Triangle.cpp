@@ -44,6 +44,14 @@ std::vector<Triangle> TriangleMesh::getTriangles() const {
     return triangles;
 }
 
+void TriangleMesh::retrieveTriangles(std::vector<Triangle>& dest) const {
+    dest.reserve(dest.size() + vertIndices.size());
+    std::for_each(vertIndices.begin(), vertIndices.end(),
+                  [&](const TriangleIndices& currTriangleIndices) -> void {
+                      dest.emplace_back(currTriangleIndices, this);
+                  });
+}
+
 bool TriangleMesh::intersect(const Ray& ray, Intersection& isect) const {
     // early return if ray does not intersect with the object bounds
     if (!bounds.intersect(ray))

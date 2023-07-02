@@ -70,4 +70,23 @@ struct BBox {
     }
 };
 
+/// @brief Splits _box_ at _axis_ in the middle and returns the corresponding boxes as pair
+inline static std::pair<BBox, BBox> splitBBox(const BBox& box, const int32_t axis) {
+    const float midOffset = (box.min[axis] + box.max[axis]) * 0.5f;
+    BBox L = box, R = box;
+    L.max[axis] = midOffset;
+    R.min[axis] = midOffset;
+    return std::make_pair(L, R);
+}
+
+/// @brief Verifies if _boxB_ intersects with _boxA_
+inline static bool boxIntersect(const BBox& boxA, const BBox& boxB) {
+    for (int32_t axis = 0; axis < 3; axis++) {
+        if (boxB.min[axis] > boxA.max[axis] || boxB.max[axis] < boxA.min[axis]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 #endif  // !AABBOX_H
