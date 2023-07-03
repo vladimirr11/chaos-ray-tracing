@@ -68,9 +68,8 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 }
 
 int main() {
-    const std::vector<std::string> inputFiles = {
-        "C:/Users/user/C++_Projects/Chaos_Ray_Tracing_2023/11.Acceleration_Structures/"
-        "scenes/scene2.crtscene"};
+    const std::vector<std::string> inputFiles = {"scenes/scene0.crtscene", "scenes/scene1.crtscene",
+                                                 "scenes/scene2.crtscene"};
 
     RenderSettings renderSettings;
 
