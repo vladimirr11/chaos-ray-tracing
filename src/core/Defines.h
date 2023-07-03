@@ -23,6 +23,7 @@ static constexpr float MAX_FLOAT = std::numeric_limits<float>::max();
 static constexpr float MIN_FLOAT = std::numeric_limits<float>::lowest();
 static constexpr size_t MAX_TRIANGLES_PER_NODE = 16;
 static constexpr int32_t MAX_TREE_DEPTH = 30;
+static constexpr float Infinity = std::numeric_limits<float>::infinity();
 
 namespace SceneDefines {
     inline const char* sceneSettings = "settings";

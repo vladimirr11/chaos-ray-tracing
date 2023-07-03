@@ -8,32 +8,30 @@ struct Ray;
 struct Intersection;
 struct Triangle;
 
-enum NodeType : uint16_t { INTERIOR, LEAF };
+enum NodeType { Interior, Leaf };
+enum class SplitMethod { Middle, SAH };
 
+/// @brief Shared storage for interior and leaf nodes
 union NodeParams {
     int children[2]{-1, -1};
     std::vector<Triangle>* nodeTriangles;
 };
 
-struct NodeIndexBBoxPair {
-    int32_t nodeIdx;
-    BBox nodeBBox;
-};
-
 class AccelTree {
 private:
-    struct alignas(16) Node {
+    struct alignas(32) Node {
         Node(const int32_t _parentId, const int8_t _splitAxis, const NodeType _nodeType,
              const NodeParams _nodeParams);
 
         NodeParams params;
         int32_t parentId;
-        int16_t splitAxis;
+        int32_t splitAxis;
         NodeType type;
+        float splitPos = Infinity;
     };
 
 public:
-    AccelTree(const std::vector<Triangle>& _sceneTriangles, const BBox& _sceneBBox);
+    AccelTree(const std::vector<Triangle>& sceneTriangles, const BBox& sceneBBox);
 
     ~AccelTree() { clearTree(); }
 
@@ -43,14 +41,16 @@ public:
 
 private:
     void buildAccelTree(const int32_t parentIdx, const int32_t depth,
-                        const std::vector<Triangle>& triangles, const BBox& nodeBBox);
+                        const std::vector<Triangle>& triangles,
+                        const std::vector<BBox>& trianglesBBoxes, const BBox& nodeBBox);
 
     int32_t addNode(const Node& node);
 
     void clearTree();
 
 private:
-    std::vector<Node> nodes;
+    std::vector<Node> nodes;  ///< Flattened nodes of the acceleration tree
+    const SplitMethod splitMethod = SplitMethod::Middle;  ///< Split method used to build the tree
 };
 
 #endif  // !ACCELERATIONTREE_H

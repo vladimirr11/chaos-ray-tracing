@@ -70,12 +70,11 @@ struct BBox {
     }
 };
 
-/// @brief Splits _box_ at _axis_ in the middle and returns the corresponding boxes as pair
-inline static std::pair<BBox, BBox> splitBBox(const BBox& box, const int32_t axis) {
-    const float midOffset = (box.min[axis] + box.max[axis]) * 0.5f;
+/// @brief Splits _box_ at _axis_ in _offset_ and returns the corresponding boxes as pair
+inline static std::pair<BBox, BBox> splitBBox(const BBox& box, const int32_t axis,
+                                              const float offset) {
     BBox L = box, R = box;
-    L.max[axis] = midOffset;
-    R.min[axis] = midOffset;
+    L.max[axis] = R.min[axis] = offset;
     return std::make_pair(L, R);
 }
 
@@ -87,6 +86,17 @@ inline static bool boxIntersect(const BBox& boxA, const BBox& boxB) {
         }
     }
     return true;
+}
+
+/// @brief Finds the longest axis of _box_
+inline static int32_t findMaxExtent(const BBox& box) {
+    const Vector3f boxDiagonal = box.max - box.min;
+    if (boxDiagonal.x > boxDiagonal.y && boxDiagonal.x > boxDiagonal.z)
+        return 0;
+    else if (boxDiagonal.y > boxDiagonal.z)
+        return 1;
+    else
+        return 2;
 }
 
 #endif  // !AABBOX_H
