@@ -23,6 +23,10 @@ private:
         Node(const int32_t _parentId, const int8_t _splitAxis, const NodeType _nodeType,
              const NodeParams _nodeParams);
 
+        bool intersect(const Ray& ray, Intersection& isectData) const;
+
+        bool intersectPrim(const Ray& ray, Intersection& isectData) const;
+
         NodeParams params;
         int32_t parentId;
         int32_t splitAxis;
@@ -50,7 +54,7 @@ private:
 
 private:
     std::vector<Node> nodes;  ///< Flattened nodes of the acceleration tree
-    const SplitMethod splitMethod = SplitMethod::Middle;  ///< Split method used to build the tree
+    const SplitMethod splitMethod = SplitMethod::SAH;  ///< Split method used to build the tree
 };
 
 #endif  // !ACCELERATIONTREE_H

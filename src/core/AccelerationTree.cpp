@@ -30,6 +30,37 @@ AccelTree::Node::Node(const int32_t _parentId, const int8_t _splitAxis, const No
         params.nodeTriangles = _nodeParams.nodeTriangles;
 };
 
+bool AccelTree::Node::intersect(const Ray& ray, Intersection& isectData) const {
+    Intersection closestPrim;
+    bool hasIntersect = false;
+    if (params.nodeTriangles->size() > 0) {
+        const auto nodeTriangles = params.nodeTriangles;
+        for (auto it = nodeTriangles->begin(); it != nodeTriangles->end(); ++it) {
+            if (it->intersectMT(ray, isectData)) {
+                if (isectData.t < closestPrim.t)
+                    closestPrim = isectData;
+                hasIntersect = true;
+            }
+        }
+    }
+
+    if (hasIntersect)
+        isectData = closestPrim;
+
+    return hasIntersect;
+}
+
+bool AccelTree::Node::intersectPrim(const Ray& ray, Intersection& isectData) const {
+    if (params.nodeTriangles->size() > 0) {
+        const auto nodeTriangles = params.nodeTriangles;
+        for (auto it = nodeTriangles->begin(); it != nodeTriangles->end(); ++it) {
+            if (it->intersectMT(ray, isectData))
+                return true;
+        }
+    }
+    return false;
+}
+
 AccelTree::AccelTree(const std::vector<Triangle>& triangles, const BBox& sceneBBox) {
     Timer timer;
     std::cout << "Start building acceleration tree...\n";
@@ -214,24 +245,16 @@ bool AccelTree::intersect(const Ray& ray, const BBox& sceneBBox, Intersection& i
             if (currNode.type == Interior) {  // stack interior nodes for traversal
                 const auto [leftChildBox, rightChildBox] =
                     splitBBox(currNodeBBox, currNode.splitAxis, currNode.splitPos);
-                if (currNode.params.children[0] != -1) {
+                if (currNode.params.children[0] != -1)
                     nodesStack.push({currNode.params.children[0], leftChildBox});
-                }
-                if (currNode.params.children[1] != -1) {
+                if (currNode.params.children[1] != -1)
                     nodesStack.push({currNode.params.children[1], rightChildBox});
-                }
             } else {  // search for the closest intersection with the leaf's triangles
-                const size_t currNodeTrianglesSize = currNode.params.nodeTriangles->size();
-                if (currNodeTrianglesSize > 0) {
-                    const auto nodeTriangles = currNode.params.nodeTriangles;
-                    for (size_t i = 0; i < currNodeTrianglesSize; i++) {
-                        if (nodeTriangles->at(i).intersectMT(ray, isectData)) {
-                            if (isectData.t < closestPrim.t) {
-                                closestPrim = isectData;
-                            }
-                            hasIntersect = true;
-                        }
-                    }
+                bool currNodeIntersect = currNode.intersect(ray, isectData);
+                if (currNodeIntersect) {
+                    if (isectData.t < closestPrim.t)
+                        closestPrim = isectData;
+                    hasIntersect = true;
                 }
             }
         }
@@ -262,15 +285,7 @@ bool AccelTree::intersectPrim(const Ray& ray, const BBox& sceneBBox,
                     nodesStack.push({currNode.params.children[1], rightChildBox});
                 }
             } else {  // verify for intersection with the leaf's triangles
-                const size_t currNodeTrianglesSize = currNode.params.nodeTriangles->size();
-                if (currNodeTrianglesSize > 0) {
-                    const auto nodeTriangles = currNode.params.nodeTriangles;
-                    for (size_t i = 0; i < currNodeTrianglesSize; i++) {
-                        if (nodeTriangles->at(i).intersectMT(ray, isectData)) {
-                            return true;
-                        }
-                    }
-                }
+                return currNode.intersectPrim(ray, isectData);
             }
         }
     }

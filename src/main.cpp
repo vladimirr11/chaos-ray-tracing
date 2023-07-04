@@ -68,8 +68,7 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 }
 
 int main() {
-    const std::vector<std::string> inputFiles = {"scenes/scene0.crtscene", "scenes/scene1.crtscene",
-                                                 "scenes/scene2.crtscene"};
+    const std::vector<std::string> inputFiles = {"scene1.crtscene"};
 
     RenderSettings renderSettings;
 
