@@ -2,9 +2,9 @@
 
 Camera::Camera(const Point3f& _loofFrom, const Point3f& _lookAt, const int _imageWidth,
                const int _imageHeight)
-    : lookFrom(_loofFrom), lookAt(_lookAt), imageWidth(_imageWidth), imageHeight(_imageHeight) {
+    : lookFrom(_loofFrom), imageWidth(_imageWidth), imageHeight(_imageHeight) {
     const Vector3f vUp{0.f, 1.f, 0.f};  ///< Up direction in world space
-    const Vector3f zVec = (lookFrom - lookAt).normalize();
+    const Vector3f zVec = (lookFrom - _lookAt).normalize();
     const Vector3f xVec = cross(vUp, zVec).normalize();
     const Vector3f yVec = cross(zVec, xVec);
     aspectRatio = imageWidth / (float)imageHeight;
@@ -21,9 +21,8 @@ Camera::Camera(const Point3f& _loofFrom, const Point3f& _lookAt, const int _imag
 }
 
 void Camera::init(const Point3f& _lookFrom, const Matrix3x3& _rotationM, const int _imageWidth,
-                  const int _imageHeight, const Point3f& _lookAt) {
+                  const int _imageHeight) {
     lookFrom = _lookFrom;
-    lookAt = _lookAt;
     rotationM = _rotationM;
     imageWidth = _imageWidth;
     imageHeight = _imageHeight;
@@ -35,8 +34,8 @@ Ray Camera::getRay(const uint32_t x, const uint32_t y) const {
     const float ndcY = (x + 0.5f) / imageHeight;
     const float screenX = (2.f * ndcX - 1.f) * aspectRatio;
     const float screenY = (1.f - 2.f * ndcY);
-    const Vector3f rayDir(screenX, screenY, -1);
-    return Ray(lookFrom, (rayDir * rotationM).normalize());
+    const Vector3f rayDirection(screenX, screenY, -1);
+    return Ray(lookFrom, (rayDirection * rotationM).normalize());
 }
 
 void Camera::truck(const float sidewayStep) {
@@ -66,4 +65,23 @@ void Camera::pan(const float thetaDeg) {
 void Camera::roll(const float thetaDeg) {
     const Matrix3x3 zAxisRotationMatrix = rotateZ(thetaDeg);
     rotationM = rotationM * zAxisRotationMatrix;
+}
+
+void Camera::setLookFrom(const Vector3f& position) { lookFrom = position; }
+
+void Camera::setLookAt(const Vector3f& lookAt) {
+    const Vector3f vUp{0.f, 1.f, 0.f};
+    const Vector3f zVec = (lookFrom - lookAt).normalize();
+    const Vector3f xVec = cross(vUp, zVec).normalize();
+    const Vector3f yVec = cross(zVec, xVec);
+
+    rotationM.m[0][0] = xVec.x;
+    rotationM.m[0][1] = xVec.y;
+    rotationM.m[0][2] = xVec.z;
+    rotationM.m[1][0] = yVec.x;
+    rotationM.m[1][1] = yVec.y;
+    rotationM.m[1][2] = yVec.z;
+    rotationM.m[2][0] = zVec.x;
+    rotationM.m[2][1] = zVec.y;
+    rotationM.m[2][2] = zVec.z;
 }

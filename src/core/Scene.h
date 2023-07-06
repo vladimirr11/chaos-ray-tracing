@@ -30,13 +30,13 @@ public:
     /// Returns true on first intersection, false if no ray-object intersection found
     bool intersectPrim(const Ray& ray) const;
 
+    Camera& getCamera() { return camera; }
+
     const Color3f& getBackground() const { return settings.backgrColor; }
 
     const SceneDimensions& getSceneDimensions() const { return settings.sceneDimensions; }
 
     const SceneSettings& getSceneSettings() const { return settings; }
-
-    const Camera& getCamera() const { return camera; }
 
     const std::vector<Light>& getLights() const { return sceneLights; }
 

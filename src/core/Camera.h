@@ -15,7 +15,7 @@ public:
     /// @brief Initialize camera data members by given position, rotation matrix, and scene
     /// dimensions
     void init(const Point3f& _lookFrom, const Matrix3x3& _rotationM, const int _imageWidth,
-              const int _imageHeight, const Point3f& _lookAt = {0.f, 0.f, -1.f});
+              const int _imageHeight);
 
     /// @brief Generate ray for each pixel in the scene by given _x_ and _y_ raster coordinates
     Ray getRay(const uint32_t x, const uint32_t y) const;
@@ -41,15 +41,18 @@ public:
     /// @brief Rotate the camera around Z-axis with _thetaDeg_ degrees
     void roll(const float thetaDeg);
 
-    Vector3f getLookFrom() const { return lookFrom; }
+    /// @brief Set up the camera position in world space
+    void setLookFrom(const Vector3f& position);
 
-    Vector3f getLookAt() const { return lookAt * rotationM; }
+    /// @brief Set camera orientation at _lookAt_ position
+    void setLookAt(const Vector3f& lookAt);
+
+    Vector3f getLookFrom() const { return lookFrom; }
 
     Matrix3x3 getRotationMatrix() const { return rotationM; }
 
 private:
     Point3f lookFrom;     ///< Camera position in world space
-    Point3f lookAt;       ///< Camera orientation in world space
     Matrix3x3 rotationM;  ///< Rotation matrix of the camera's basis vectors
     int imageWidth;       ///< Scene width
     int imageHeight;      ///< Scene height

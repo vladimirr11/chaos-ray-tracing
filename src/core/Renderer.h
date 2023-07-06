@@ -22,7 +22,7 @@ class Renderer {
 public:
     Renderer() = delete;
 
-    Renderer(PPMImageI& _ppmImage, const Scene* _scene) : ppmImage(_ppmImage), scene(_scene) {}
+    Renderer(PPMImageI& _ppmImage, Scene* _scene) : ppmImage(_ppmImage), scene(_scene) {}
 
     /// @brief Statically divides the scene into segments that are on [_chunkSize_ * _threadCount_]
     /// distance away for each thread
@@ -34,7 +34,7 @@ public:
 
 private:
     PPMImageI& ppmImage;  ///< Output image
-    const Scene* scene;   ///< Scene to render
+    Scene* scene;         ///< Scene to render
 };
 
 #endif  // !RENDERER_H
