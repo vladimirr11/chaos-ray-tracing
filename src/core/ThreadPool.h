@@ -27,7 +27,7 @@ public:
         Assert(!running && "Can't start ThreadPool if it's already running");
         running = true;
         for (auto& worker : workers) {
-            worker = std::thread(&workerBase, this);
+            worker = std::thread(&ThreadPool::workerBase, this);
         }
     }
 
