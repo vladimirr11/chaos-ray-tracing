@@ -51,8 +51,7 @@ inline static void serializePPMImage(std::ostream& outputStream, const PPMImageI
 
 /// @brief Converts PPMImageI::Pixel data to buffer of chars
 inline static std::vector<char> serializePPMImage2Buffer(const PPMImageI& ppmImage) {
-    std::vector<char> buffer;
-    buffer.reserve(ppmImage.width * ppmImage.height * 3);
+    std::vector<char> buffer(ppmImage.width * ppmImage.height * 3);
     for (int i = 0; const PPMPixelI& pixel : ppmImage.data) {
         buffer[i] = pixel.r;
         buffer[i + 1] = pixel.g;
