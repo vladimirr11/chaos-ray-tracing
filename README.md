@@ -12,3 +12,11 @@ git clone https://github.com/vladimirr11/chaos-ray-tracing.git
 ```
 
 ### Build with CMake
+To build the project navigate to the build directory and run the following commands:
+```bash
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
+```
+
+### Docker
