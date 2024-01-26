@@ -91,12 +91,9 @@ int32_t Parser::parseSceneSettings(std::string_view inputFile, SceneSettings& se
 
     const Value& imageSettings = sceneSettings.FindMember(SceneDefines::imageSettings)->value;
     const Value& bucketSize = imageSettings.FindMember(SceneDefines::bucketSize)->value;
-    if (!bucketSize.IsInt()) {
-        std::cerr << "Parser failed to parse scene bucket size." << std::endl;
-        return EXIT_FAILURE;
+    if (bucketSize.IsInt()) {
+        settings.bucketSize = bucketSize.GetInt();
     }
-
-    settings.bucketSize = bucketSize.GetInt();
 
     return EXIT_SUCCESS;
 }

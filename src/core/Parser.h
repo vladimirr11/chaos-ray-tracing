@@ -21,7 +21,7 @@ struct SceneDimensions {
 struct SceneSettings {
     Color3f backgrColor;
     SceneDimensions sceneDimensions;
-    size_t bucketSize = 0;
+    size_t bucketSize = 16;
 };
 
 inline static Vector3f loadVector(const Value::ConstArray& valArr) {

@@ -90,12 +90,12 @@ inline static unsigned getHardwareThreads() {
 }
 
 /// @brief Converts crtscene file name to ppm file name
-inline static std::string getPpmFileName(const std::string& inputFile) {
+inline static std::string getFileName(const std::string& inputFile) {
     const size_t start = inputFile.rfind("/");
     const size_t end = inputFile.rfind(".");
     if (start > end)
-        return inputFile.substr(0, end) + ".ppm";
-    return inputFile.substr(start + 1, end - start - 1) + ".ppm";
+        return inputFile.substr(0, end);
+    return inputFile.substr(start + 1, end - start - 1);
 }
 
 /// @brief Retrieves AABB for give triangle

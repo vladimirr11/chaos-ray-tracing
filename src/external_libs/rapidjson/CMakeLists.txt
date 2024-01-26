@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(rapidjson LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(_RAPIDJSON_INC_DIR ${_BASE_DIR}/${PROJECT_NAME}) 
+set(_RAPIDJSON_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}) 
 
 add_library(
     ${PROJECT_NAME} STATIC
@@ -47,10 +45,16 @@ add_library(
         ${_RAPIDJSON_INC_DIR}/writer.h
 )
 
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /std:c++20)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -std=c++20 -O2)
+endif()
+
 target_include_directories(
     ${PROJECT_NAME}
         PUBLIC 
-            ${_BASE_DIR}
+            ${_RAPIDJSON_INC_DIR}
 )
     
 set_target_properties(rapidjson PROPERTIES LINKER_LANGUAGE CXX)

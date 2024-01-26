@@ -19,7 +19,7 @@ public:
 public:
     StatRegisterer(std::function<void()>);
 
-    static __forceinline DataArray& data() { return statsData; }
+    static DataArray& data() { return statsData; }
 
     static void invokeCallbacks() {
         for (auto func : *callbacks) func();

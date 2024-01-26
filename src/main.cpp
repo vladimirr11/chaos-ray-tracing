@@ -4,16 +4,9 @@
 #include "core/ThreadPool.h"
 #include "core/Timer.h"
 
-// #define RENDER_STATIC
-
 static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
                            RenderSettings& settings) {
-    const std::string ppmFileName = getPpmFileName(inputFile);
-    std::ofstream ppmImageFile(ppmFileName, std::ios::out | std::ios::binary);
-    if (!ppmImageFile.good()) {
-        std::cout << "Input file " << inputFile << " not good.\n";
-        return EXIT_FAILURE;
-    }
+    const std::string ppmFileName = getFileName(inputFile);
 
     SceneParams sceneParams;
     if (parseSceneParams(inputFile, sceneParams) != EXIT_SUCCESS) {
@@ -30,12 +23,21 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 
     // initialize renderer
     Renderer renderer(ppmImage, &scene);
-
     settings.numPixelsPerThread = scene.getSceneSettings().bucketSize;
 
-    std::cout << "Loading " << ppmFileName << " scene...\n";
+    // camera pos to take an image from
+    const std::vector<Vector3f> cameraPosVec{Vector3f{0.f, 14.f, 26.f}, Vector3f{0.f, 6.f, 10.f},
+                                             Vector3f{4.f, 6.f, 10.f},  Vector3f{0.f, 6.f, -10.f},
+                                             Vector3f{4.f, 6.f, -10.f}, Vector3f{-14.f, 14.f, 0.f}};
+
+    std::cout << "Loading " << ppmFileName << ".crtscene ...\n";
     scene.createAccelTree();
-    {
+    for (int32_t i = 0; i < (int32_t)cameraPosVec.size(); i++) {
+        // set camera position and target
+        Camera& sceneCamera = scene.getCamera();
+        sceneCamera.setLookFrom(cameraPosVec[i]);
+        sceneCamera.setLookAt(Vector3f{0.f, 0.f, 0.f});
+
         std::cout << "Start generating data...\n";
         Timer timer;
         timer.start();
@@ -54,22 +56,19 @@ static int32_t runRenderer(const std::string& inputFile, ThreadPool& pool,
 #endif
         pool.completeTasks();
 
-        std::cout << ppmFileName << " data generated in [" << std::fixed << std::setprecision(2)
-                  << Timer::toMilliSec<float>(timer.getElapsedNanoSec()) << "ms] on "
-                  << settings.numThreads << " threads\n";
+        std::cout << ppmFileName << i << " data generated in [" << std::fixed
+                  << std::setprecision(2) << Timer::toMilliSec<float>(timer.getElapsedNanoSec())
+                  << "ms] on " << settings.numThreads << " threads\n";
 
         flushStatistics();
+        serializePPMImage2PNG(ppmFileName + std::to_string(i) + ".jpg", ppmImage);
     }
-
-    serializePPMImage(ppmImageFile, ppmImage);
-    ppmImageFile.close();
 
     return EXIT_SUCCESS;
 }
 
 int main() {
-    const std::vector<std::string> inputFiles = {"scenes/scene1.crtscene"};
-
+    const std::vector<std::string> inputFiles{"scenes/scene.crtscene"};
     RenderSettings renderSettings;
 
     ThreadPool pool(renderSettings.numThreads);
