@@ -39,7 +39,7 @@ add_executable(
 )
 
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /std:c++20)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /std:c++20  /O2)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -std=c++2a -O2)
 endif()
@@ -55,10 +55,12 @@ target_include_directories(
             ${_SRC_DIR}
 )
 
+add_subdirectory(${_EXTERNAL_LIBS}/rapidjson)
+add_subdirectory(${_EXTERNAL_LIBS}/stb)
+
 target_link_libraries(
     ${PROJECT_NAME}
         PRIVATE 
-            rapidjson
             stb
 )
 
@@ -67,6 +69,3 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     ${CMAKE_CURRENT_SOURCE_DIR}/scenes
     $<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes
 )
-
-add_subdirectory(${_EXTERNAL_LIBS}/rapidjson)
-add_subdirectory(${_EXTERNAL_LIBS}/stb)

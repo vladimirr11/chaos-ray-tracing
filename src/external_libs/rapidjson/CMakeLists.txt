@@ -45,12 +45,6 @@ add_library(
         ${_RAPIDJSON_INC_DIR}/writer.h
 )
 
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /std:c++20)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -std=c++20 -O2)
-endif()
-
 target_include_directories(
     ${PROJECT_NAME}
         PUBLIC 
