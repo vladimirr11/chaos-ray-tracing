@@ -4,4 +4,4 @@ Minimalistic C++ ray tracer developed during the Chaos Ray Tracing course 2023. 
 
 ### Getting the Code
 To get the code clone the repo using the following command:
-</> https://github.com/vladimirr11/chaos-ray-tracing
+<code> https://github.com/vladimirr11/chaos-ray-tracing
