@@ -1,1 +1,1 @@
-# chaos-ray-tracing
+# Chaos Ray Tracing course repo
