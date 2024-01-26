@@ -1,6 +1,7 @@
 #include "Triangle.h"
 #include "Material.h"
 #include "Statistics.h"
+#include <algorithm>
 
 STAT(NUM_TRIANGLE_ISECT_TESTS, numTriIsectTests, triIsectTestRegisterer);
 STAT(NUM_TRIANGLE_ISECTS, numTriIsects, isectRegisterer);
