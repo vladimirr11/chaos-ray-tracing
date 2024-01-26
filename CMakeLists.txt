@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(Acceleration LANGUAGES CXX)
+project(crt LANGUAGES CXX)
 
-set(CMAKE_CXX_FLAGS "-Wall -g -O2")
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src) 
 set(_EXTERNAL_LIBS ${_SRC_DIR}/external_libs)
 
@@ -39,6 +38,17 @@ add_executable(
         ${_SRC_DIR}/main.cpp
 )
 
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /std:c++20)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -std=c++2a -O2)
+endif()
+
+if(UNIX)
+    find_package(Threads REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+endif()
+
 target_include_directories(
     ${PROJECT_NAME}
         PRIVATE 
@@ -49,6 +59,14 @@ target_link_libraries(
     ${PROJECT_NAME}
         PRIVATE 
             rapidjson
+            stb
 )
 
-add_subdirectory(${_EXTERNAL_LIBS})
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD     
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/scenes
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes
+)
+
+add_subdirectory(${_EXTERNAL_LIBS}/rapidjson)
+add_subdirectory(${_EXTERNAL_LIBS}/stb)
